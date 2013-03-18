@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+    <html>  
+      <head>  
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <link rel="stylesheet" type="text/css" href="css/index.css" />
+        <title>Hello World</title>
+              <script type="text/javascript" src="cordova-2.5.0.js"></script>
+              <script type="text/javascript" src="js/jquery.js"></script>
+               <script type="text/javascript" src="js/xui-2.3.2.js"></script>
+		      <script type="text/javascript" src="js/index.js"></script>
+		      <script type="text/javascript" charset="utf-8">  
+						  var db = null;
+						  var userToSave=null;
+						  var userArray=null;
+						  
+						 
+						  function User(name) {
+								var _self=this;
+								this.name= name;
+								this.getName = function(){
+									return _self.name;
+								}
+							}
+						  var displayHello = function() {  
+									                        var name =      document.getElementById("firstname").value;  
+									                        navigator.notification.alert("name" + name);  
+						            					} 
+						  var saveToStorage = function(){
+															var name =      document.getElementById("firstname").value;  
+															userToSave = new User(name);
+															db.transaction(queryInsertUser, errorCB);
+						
+														}
+						  var showUsers = function(){
+															db.transaction(querySelectUsers, errorCB2);
+													}
+													
+						    document.addEventListener("deviceready", onDeviceReady, false);
+						    function onDeviceReady() {
+						        db = window.openDatabase("online", "1.0", "StorageUserDemo", 200000);
+						        db.transaction(populateDB, errorCB, successCB);
+						    }
+						    function populateDB(tx) {
+						         tx.executeSql('DROP TABLE IF EXISTS USERS');
+						         tx.executeSql('CREATE TABLE IF NOT EXISTS USERS (name UNIQUE)');
+						         tx.executeSql('INSERT INTO USERS (name) VALUES ("KIMY")');
+								 
+						    }
+						    function errorCB(tx, err) {
+						        alert("Error processing SQL: "+err);
+						    }
+							 function errorCB2(tx, err) {
+						        alert("Error processing SQL: "+err);
+						    }
+						    function successCB() {
+						        console.log("success!");
+						    }
+						
+						
+							function queryInsertUser(tx) {
+								console.log("User to save= " + userToSave.getName());
+								tx.executeSql('INSERT INTO USERS (name) VALUES ("'+userToSave.getName()+'")');
+							}
+							function queryInsertUsers(tx) {
+								console.log("User to save= " + userArray);
+								for(i=0;i<userArray.length;i++){
+								console.log("userArray-------"+userArray[i]);
+									tx.executeSql('INSERT INTO USERS (name) VALUES ("'+userArray[i].getName()+'")');
+								}
+							}
+							function querySelectUsers(tx) {
+								tx.executeSql('SELECT * FROM USERS', [], querySuccessUser, errorCB2);
+							}
+
+							function querySuccessUser(tx, results) {
+								console.log("Returned rows = " + results.rows.length);
+								var len = results.rows.length;
+								var llistat="";
+								 for (var i=0; i<len; i++){
+									console.log("Row = " + i + " ID = " + results.rows.item(i).name);
+									llistat=llistat+ results.rows.item(i).name+"-";
+								}										
+							}
+							
+							function callWebService(){
+						      
+						        var url = "http://10.0.2.2:9090/Spring/rest/dao";
+						        x$.data = {};
+						        x$("#search_tweet_button").xhr(url,{
+						          error: function(){alert("failed"+this.responseText)},
+						          callback: function(){						          
+						             var jsonResponse = eval("("+this.responseText+")");						            
+						          	  userArray = new Array();
+							          $.each(jsonResponse, function(index, value) { 		
+									          	if(value.username!='undefined'){       	
+									          		alert("sss"+value.username);
+									          		console.log(value.username);			 	
+														userArray[index] = new User(value.username);													
+												}
+																			 									       						
+										});
+										
+										db.transaction(queryInsertUsers, errorCB);						         
+						          }
+						        });
+						      }
+					</script>
+        </head>  
+        <body onload="init();" id="bdy" >  
+            <div id="txt">  
+	            <input   type="text" name="firstname" id="firstname" />  
+	            </div>  
+	            <div id ="btn">  
+	   				 <a href="#" class="btn" onclick="displayHello();">Say Hello</a>  
+	            </div>  
+				 <div id ="btn">  
+	   				 <a href="#" class="btn" onclick="saveToStorage();">Save to storage</a>  
+	            </div> 
+				<div id ="btn">  
+	   				 <a href="#" class="btn" onclick="showUsers();">Show users</a>  
+	            </div> 
+	            <div id ="btn">  
+	   				 <a href="#" id="search_tweet_button" class="btn" onclick="callWebService();">Show users</a>  
+	            </div> 
+	            <div id="tweet" ></div>
+       		 </div>  
+ 	 	</body> 
+    </html>  
