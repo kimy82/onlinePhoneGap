@@ -5,14 +5,17 @@
         <meta name="format-detection" content="telephone=no" />
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
         <link rel="stylesheet" type="text/css" href="css/index.css" />
+        <link rel="stylesheet" type="text/css" href="css/jquery.min.css" />
         <title>Hello World</title>
               <script type="text/javascript" src="cordova-2.5.0.js"></script>
               <script type="text/javascript" src="js/jquery.js"></script>
+              <script type="text/javascript" src="js/jQueryMobile.js"></script>
                <script type="text/javascript" src="js/xui-2.3.2.js"></script>
 		      <script type="text/javascript" src="js/index.js"></script>
 		      <script type="text/javascript" charset="utf-8">  
 						  var db = null;
 						  var userToSave=null;
+						   var userToDelete=null;
 						  var userArray=null;
 						  
 						 
@@ -30,6 +33,7 @@
 						  var saveToStorage = function(){
 															var name =      document.getElementById("firstname").value;  
 															userToSave = new User(name);
+															$('ul').append('<li><a>'+name+'</a></li>').listview('refresh');
 															db.transaction(queryInsertUser, errorCB);
 						
 														}
@@ -70,6 +74,10 @@
 									tx.executeSql('INSERT INTO USERS (name) VALUES ("'+userArray[i].getName()+'")');
 								}
 							}
+							function queryDeleteUsers(tx) {
+																
+									tx.executeSql('DELETE USERS where name='+userToDelete.getName());								
+							}
 							function querySelectUsers(tx) {
 								tx.executeSql('SELECT * FROM USERS', [], querySuccessUser, errorCB2);
 							}
@@ -88,15 +96,16 @@
 						      
 						        var url = "http://10.0.2.2:9090/Spring/rest/dao";
 						        x$.data = {};
+						        $('ul').html("");
 						        x$("#search_tweet_button").xhr(url,{
 						          error: function(){alert("failed"+this.responseText)},
 						          callback: function(){						          
 						             var jsonResponse = eval("("+this.responseText+")");						            
 						          	  userArray = new Array();
 							          $.each(jsonResponse, function(index, value) { 		
-									          	if(value.username!='undefined'){       	
-									          		alert("sss"+value.username);
-									          		console.log(value.username);			 	
+									          	if(value.username!='undefined'){       										          		
+									          			console.log(value.username);	
+									          			$('ul').append('<li><a href="#infoUser" onclick="createUser(\''+value.username+'\')" >'+value.username+'</a></li>').listview('refresh');		 	
 														userArray[index] = new User(value.username);													
 												}
 																			 									       						
@@ -106,25 +115,72 @@
 						          }
 						        });
 						      }
+						      function createUser(name){
+						       	userToDelete = new User(name);	
+						      }
+						      function deleteUser(){
+						      
+						        var url = "http://10.0.2.2:9090/Spring/rest/dao/delete?user="+userToDelete.getName();
+						        x$.data = {};
+						        x$("#search_tweet_button").xhr(url,{
+						          error: function(){alert("failed"+this.responseText)},
+						          callback: function(){		
+						          				          
+						             var jsonResponse = eval("("+this.responseText+")");						            						          											
+									 db.transaction(queryDeleteUsers, errorCB);						         
+						          }
+						        });
+						      }
 					</script>
         </head>  
         <body onload="init();" id="bdy" >  
-            <div id="txt">  
-	            <input   type="text" name="firstname" id="firstname" />  
-	            </div>  
-	            <div id ="btn">  
-	   				 <a href="#" class="btn" onclick="displayHello();">Say Hello</a>  
-	            </div>  
-				 <div id ="btn">  
-	   				 <a href="#" class="btn" onclick="saveToStorage();">Save to storage</a>  
-	            </div> 
-				<div id ="btn">  
-	   				 <a href="#" class="btn" onclick="showUsers();">Show users</a>  
-	            </div> 
-	            <div id ="btn">  
-	   				 <a href="#" id="search_tweet_button" class="btn" onclick="callWebService();">Show users</a>  
-	            </div> 
+        <div data-role="page" id="list" >
+	        	<div data-role="header">
+					<h1>Users</h1>
+				</div>
+	        	<div data-role="content" >
+	       		
+		       		 <ul data-role="listview" data-inset="true" data-filter="true">
+					    <li><a href="#">Acura</a></li>
+					    <li><a href="#">Audi</a></li>
+					    <li><a href="#">BMW</a></li>
+					    <li><a href="#">Cadillac</a></li>
+					    <li><a href="#">Ferrari</a></li>
+					</ul>
+				</div>
+				<div data-role="footer">
+					<h4><p><a href="#insert">Insert User</a></p></h4>
+				</div>
+		</div>
+		<div data-role="page" id="insert" >
+        	<div data-role="header">
+				<h1>Users</h1>
+			</div>
+        	<div data-role="content" >
+    			<label for="firstname">User name:</label>
+    			<input name="firstname" id="firstname" placeholder="Text input" value="" data-clear-btn="true" type="text">
+	            
+	   				 <a href="#" data-role="button" onclick="saveToStorage();">Save to storage</a>  
+	   				 <a href="#" data-role="button" id="search_tweet_button" class="btn" onclick="callWebService();">Load Users</a>  
+ 
 	            <div id="tweet" ></div>
-       		 </div>  
+       		
+	       	</div>			
+			<div data-role="footer">
+					<h4><p><a href="#list">List</a></p></h4>
+			</div>
+		</div>
+		<div data-role="page" id="infoUser" >
+        	<div data-role="header">
+				<h1>Info User</h1>
+			</div>
+        	<div data-role="content" >
+    				
+	   				 <a href="#" data-role="button" id="userToDelete" onclick="deleteUser();">Delete the user</a>  
+	       	</div>			
+			<div data-role="footer">
+					<h4><p><a href="#list">List</a></p></h4>
+			</div>
+		</div>
  	 	</body> 
     </html>  
