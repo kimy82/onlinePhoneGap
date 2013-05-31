@@ -10,12 +10,12 @@
               <script type="text/javascript" src="cordova-2.5.0.js"></script>
               <script type="text/javascript" src="js/jquery.js"></script>
               <script type="text/javascript" src="js/jQueryMobile.js"></script>
-               <script type="text/javascript" src="js/xui-2.3.2.js"></script>
+              <script type="text/javascript" src="js/xui-2.3.2.js"></script>
 		      <script type="text/javascript" src="js/index.js"></script>
 		      <script type="text/javascript" charset="utf-8">  
 						  var db = null;
 						  var userToSave=null;
-						   var userToDelete=null;
+						  var userToDelete=null;
 						  var userArray=null;
 						  
 						 
@@ -131,9 +131,75 @@
 						          }
 						        });
 						      }
+						      var controlUser={
+						      						_init: function(){
+						      							this._self=this;
+						      						},
+											      	check: function(){
+											      		var username = window.localStorage.getItem("user.username");
+											      		var login = window.localStorage.getItem("user.login");
+											      		if(username==null || login==null){
+											      			$('#logUser').page();
+											      		}
+											      		var url = "http://10.0.2.2:9090/Spring/rest/dao/login?user="+username+"&pass="+login;
+											        	x$.data = {};
+												        $('ul').html("");
+												        x$("#search_tweet_button").xhr(url,{
+												          error: function(){alert("failed"+this.responseText)},
+												          callback: function(){						          
+												             var jsonResponse = eval("("+this.responseText+")");						            												          	 						            
+												          	 if(jsonResponse.ok=='ok'){												          	 	
+												          	 	$.mobile.changePage("#list", { transition: "slideup"});
+												          	 }else{
+												          	 	$.mobile.changePage("#logUser", { transition: "slideup"});	
+												          	 }					         
+												          }
+												        });
+											      	},											      
+											      	logUser: function(){
+											      		var username =$("#username").val();
+											      		var login =$("#password").val();
+											      		
+											      		var url = "http://10.0.2.2:9090/Spring/rest/dao/login?user="+username+"&pass="+login;
+											        	x$.data = {};
+												        $('ul').html("");
+												        x$("#userToLog").xhr(url,{
+												          error: function(){alert("failed"+this.responseText)},
+												          callback: function(){						          
+												             var jsonResponse = eval("("+this.responseText+")");						            
+												          	 if(jsonResponse.ok=='ok'){
+												          	 	controlUser.setUserStorage(jsonResponse.username,jsonResponse.password);
+												          	 	$.mobile.changePage("#list", { transition: "slideup"});
+												          	 	
+												          	 }else{
+												          	 	$.mobile.changePage("#logUser", { transition: "slideup"});												          	 	
+												          	 }		         
+												          }
+												        });
+											      	},
+											      	setUserStorage: function(user,password){
+											      		window.localStorage.setItem("user.username",user);
+											      		window.localStorage.setItem("user.login",password);											      		
+											      	}
+						      }
+						      controlUser._init();			
+						      controlUser.check();			   
 					</script>
         </head>  
-        <body onload="init();" id="bdy" >  
+        <body id="bdy" >  
+        <div data-role="page" id="logUser" >
+        	<div data-role="header">
+				<h1>LOGIN</h1>
+			</div>
+        	<div data-role="content" >
+    				
+	   				 <input name="username" id="username" placeholder="Text input" value="" data-clear-btn="true" type="text">
+	   				 <input name="password" id="password" placeholder="Text input" value="" data-clear-btn="true" type="password">
+	       	</div>			
+			<div data-role="footer">
+					<h4><p><a href="#" data-role="button" id="userToLog" onclick="controlUser.logUser();">ENTER</a></p></h4>
+			</div>
+		</div>
         <div data-role="page" id="list" >
 	        	<div data-role="header">
 					<h1>Users</h1>
@@ -181,6 +247,6 @@
 			<div data-role="footer">
 					<h4><p><a href="#list">List</a></p></h4>
 			</div>
-		</div>
+		</div>		
  	 	</body> 
     </html>  
