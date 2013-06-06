@@ -6,20 +6,35 @@
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
         <link rel="stylesheet" type="text/css" href="css/index.css" />
         <link rel="stylesheet" type="text/css" href="css/jquery.min.css" />
-        <title>Hello World</title>
+        <title>Online</title>
               <script type="text/javascript" src="cordova-2.5.0.js"></script>
               <script type="text/javascript" src="js/jquery.js"></script>
               <script type="text/javascript" src="js/jQueryMobile.js"></script>
-              <script type="text/javascript" src="js/xui-2.3.2.js"></script>
 		      <script type="text/javascript" src="js/index.js"></script>
+			  <script type="text/javascript" src="js/resources.js"></script>
 		      <script type="text/javascript" charset="utf-8">  
+		      
+		      
+		      			$(document).on("mobileinit", function(){
+						  $.mobile.allowCrossDomainPages = true;
+						  $.support.cors = true;
+						
+						});
+						
+						document.addEventListener("deviceready", onDeviceReady, false);
+						function onDeviceReady() {
+						    	console.log("database creating");
+						        db = window.openDatabase("online", "1.0", "StorageCatalog", 200000);
+						        db.transaction(controlDB.populateClientDB, controlDB.errorCB, controlDB.successCB);
+						}
+						
 						  var db = null;
 						  var userToSave=null;
 						  var userToDelete=null;
-						  var userArray=null;
+						  var userArray=null;						  
 						  
 						 
-						  function User(name) {
+						  function Client(name) {
 								var _self=this;
 								this.name= name;
 								this.getName = function(){
@@ -31,7 +46,9 @@
 									                        navigator.notification.alert("name" + name);  
 						            					} 
 						  var saveToStorage = function(){
-															var name =      document.getElementById("firstname").value;  
+															var name =      document.getElementById("firstname").value;
+															var pass =      document.getElementById("passNewUser").value;  
+															controlUser.insertUser(name,pass); 
 															userToSave = new User(name);
 															$('ul').append('<li><a>'+name+'</a></li>').listview('refresh');
 															db.transaction(queryInsertUser, errorCB);
@@ -41,22 +58,20 @@
 															db.transaction(querySelectUsers, errorCB2);
 													}
 													
-						    document.addEventListener("deviceready", onDeviceReady, false);
-						    function onDeviceReady() {
-						        db = window.openDatabase("online", "1.0", "StorageUserDemo", 200000);
-						        db.transaction(populateDB, errorCB, successCB);
-						    }
+						  
 						    function populateDB(tx) {
-						         tx.executeSql('DROP TABLE IF EXISTS USERS');
-						         tx.executeSql('CREATE TABLE IF NOT EXISTS USERS (name UNIQUE)');
-						         tx.executeSql('INSERT INTO USERS (name) VALUES ("KIMY")');
+						    	 console.log("table creating");
+						         //tx.executeSql('DROP TABLE IF EXISTS CLIENTS');
+						         tx.executeSql('CREATE TABLE IF NOT EXISTS CLIENTS (name UNIQUE, id UNIQUE)');
+						         //tx.executeSql('INSERT INTO CLIENTS (name) VALUES ("KIMY")');
+						         console.log("table created");
 								 
 						    }
 						    function errorCB(tx, err) {
-						        alert("Error processing SQL: "+err);
+						       console.log("Error processing SQL: "+err);
 						    }
 							 function errorCB2(tx, err) {
-						        alert("Error processing SQL: "+err);
+						        console.log("Error processing SQL: "+err);
 						    }
 						    function successCB() {
 						        console.log("success!");
@@ -68,9 +83,12 @@
 								tx.executeSql('INSERT INTO USERS (name) VALUES ("'+userToSave.getName()+'")');
 							}
 							function queryInsertUsers(tx) {
-								console.log("User to save= " + userArray);
-								for(i=0;i<userArray.length;i++){
-								console.log("userArray-------"+userArray[i]);
+								console.log("User to save= ");
+								tx.executeSql('DELETE FROM USERS where 1=1');
+								console.log("Delete");
+								for(i=0;i<userArray.length;i++){	
+									var query = 'INSERT INTO USERS (name) VALUES ("'+userArray[i].getName()+'")';
+									console.log(query);										
 									tx.executeSql('INSERT INTO USERS (name) VALUES ("'+userArray[i].getName()+'")');
 								}
 							}
@@ -92,45 +110,126 @@
 								}										
 							}
 							
-							function callWebService(){
-						      
-						        var url = "http://10.0.2.2:9090/Spring/rest/dao";
-						        x$.data = {};
-						        $('ul').html("");
-						        x$("#search_tweet_button").xhr(url,{
-						          error: function(){alert("failed"+this.responseText)},
-						          callback: function(){						          
-						             var jsonResponse = eval("("+this.responseText+")");						            
-						          	  userArray = new Array();
-							          $.each(jsonResponse, function(index, value) { 		
-									          	if(value.username!='undefined'){       										          		
-									          			console.log(value.username);	
-									          			$('ul').append('<li><a href="#infoUser" onclick="createUser(\''+value.username+'\')" >'+value.username+'</a></li>').listview('refresh');		 	
-														userArray[index] = new User(value.username);													
-												}
-																			 									       						
-										});
-										
-										db.transaction(queryInsertUsers, errorCB);						         
-						          }
-						        });
-						      }
 						      function createUser(name){
 						       	userToDelete = new User(name);	
 						      }
-						      function deleteUser(){
+							 var controlDB ={
+												_init: function(){
+						      							this._self=this;
+														this.clientArray=new Array();														
+						      					},
+												populateClientDB: function(tx) {
+													 console.log("table creating");
+													 tx.executeSql('DROP TABLE IF EXISTS CLIENTS');
+													 tx.executeSql('CREATE TABLE IF NOT EXISTS CLIENTS (name UNIQUE)');
+													 //tx.executeSql('INSERT INTO CLIENTS (name) VALUES ("KIMY")');
+													 console.log("table created");													 													 
+												},
+												errorCB: function(tx, err) {
+												   console.log("Error creating client table SQL: "+err);
+												},
+												successCB: function() {
+													console.log("success: client table created!");
+												},
+												fillClient: function(){
+													console.log("filling clients table");
+													var username = window.localStorage.getItem("user.username");
+													 var url = "http://77.228.245.51/Spring/rest/dao?user="+username;
+													      $('ul').html("");
+															      $.ajax({
+															       			url: url,
+																	        type: "GET",
+																			async: true,
+																			dataType: 'json',
+																			cache : false,													         
+																			success: function ( jsonResponse ) {
+																					  
+																			          $.each(jsonResponse, function(index, value) { 		
+																					          	if(value.username!='undefined'){       										          		
+																					          			console.log(value.username);
+																										$('ul#clientsList').append('<li><a href="#infoUser" onclick="controlClient.createClient(\''+value.username+'\')" >'+value.username+'</a></li>').listview('refresh');		 		
+																										controlDB.clientArray[index] = new Client(value.username);													
+																								}																						 									       					
+																						});																			
+																						db.transaction(controlDB.queryInsertUsers, controlDB.errorCB);		
+																				}
+																	});	
+													console.log("end filling clients table");
+												},
+												queryInsertUsers: function(tx) {
+													console.log("Inserting clients ");
+										
+													for(i=0;i<userArray.length;i++){	
+														var query = 'INSERT INTO CLIENTS (name) VALUES ("'+userArray[i].getName()+'")';
+														console.log(query);										
+														tx.executeSql(query);
+													}
+												},
+							 }
+							 var controlPage={	
+												_userRole:"ROLE_CLIENT",
+												_init: function(){
+						      							this._self=this;														
+						      					},
+												createMenuPrincipal: function(){
+													controlPage._initRole();
+													if(controlPage._userRole=='ROLE_CLIENT'){
+														controlPage._createMenuClient();
+													}else if(controlPage._userRole=='ROLE_ADMIN'){
+														controlPage._createMenuAdmin();
+													}else if(controlPage._userRole=='ROLE_SUPERADMIN'){
+														controlPage._createMenuSuperAdmin();
+													}else{
+														console.log("ERROR: No hi ha role per defecte fem el del client");
+														controlPage._createMenuClient();
+													}
+													
+												},
+												_initRole(){
+													var role = window.localStorage.getItem("user.role");
+													if(role!=null){
+														controlPage._userRole=role;
+													}else{
+														console.log("ERROR: No hi ha role per defecte fem el del client");
+														controlPage._userRole='ROLE_CLIENT';
+													}
+												},
+												_createMenuClient: function(){
+													$('ul#menuList').append('<li><a href="#cataleg">'+Translation.getText(2,null)+'</a></li>').listview('refresh');		 	
+													$('ul#menuList').append('<li><a href="#notificacio">'+Translation.getText(3,null)+'</a></li>').listview('refresh');
+													$('ul#menuList').append('<li><a href="#companyInfo">'+Translation.getText(4,null)+'</a></li>').listview('refresh');
+												},
+												_createMenuAdmin: function(){
+													
+													$('ul#menuList').append('<li><a href="#cataleg">'+Translation.getText(2,null)+'</a></li>').listview('refresh');		 	
+													$('ul#menuList').append('<li><a href="#notificacio">'+Translation.getText(3,null)+'</a></li>').listview('refresh');
+													$('ul#menuList').append('<li><a href="#companyInfo">'+Translation.getText(4,null)+'</a></li>').listview('refresh');
+													$('ul#menuList').append('<li><a href="#clients">'+Translation.getText(5,null)+'</a></li>').listview('refresh');
+													$('ul#menuList').append('<li><a href="#createProduct">'+Translation.getText(6,null)+'</a></li>').listview('refresh');
+													controlDB.fillClient();
+												},
+												_createMenuSuperAdmin: function(){
+													
+													$('ul#menuList').append('<li><a href="#cataleg">'+Translation.getText(2,null)+'</a></li>').listview('refresh');		 	
+													$('ul#menuList').append('<li><a href="#notificacio">'+Translation.getText(3,null)+'</a></li>').listview('refresh');
+													$('ul#menuList').append('<li><a href="#companyInfo">'+Translation.getText(4,null)+'</a></li>').listview('refresh');
+													$('ul#menuList').append('<li><a href="#clients">'+Translation.getText(5,null)+'</a></li>').listview('refresh');
+													$('ul#menuList').append('<li><a href="#createProduct">'+Translation.getText(6,null)+'</a></li>').listview('refresh');
+													controlDB.fillClient();
+													
+												},
+							 
+							 }				      	
+					
+						       var controlClient={
+						      						_init: function(){
+						      							this._self=this;
+														this.client=null;
+						      						},											
+													createClient: function(name){
+														controlClient.client = new Client(name);	
+													},
 						      
-						        var url = "http://10.0.2.2:9090/Spring/rest/dao/delete?user="+userToDelete.getName();
-						        x$.data = {};
-						        x$("#search_tweet_button").xhr(url,{
-						          error: function(){alert("failed"+this.responseText)},
-						          callback: function(){		
-						          				          
-						             var jsonResponse = eval("("+this.responseText+")");						            						          											
-									 db.transaction(queryDeleteUsers, errorCB);						         
-						          }
-						        });
-						      }
 						      var controlUser={
 						      						_init: function(){
 						      							this._self=this;
@@ -139,85 +238,150 @@
 											      		var username = window.localStorage.getItem("user.username");
 											      		var login = window.localStorage.getItem("user.login");
 											      		if(username==null || login==null){
-											      			$('#logUser').page();
+											      			$.mobile.changePage("#logUser", { transition: "slideup"});	
+															return;
 											      		}
-											      		var url = "http://10.0.2.2:9090/Spring/rest/dao/login?user="+username+"&pass="+login;
-											        	x$.data = {};
-												        $('ul').html("");
-												        x$("#search_tweet_button").xhr(url,{
-												          error: function(){alert("failed"+this.responseText)},
-												          callback: function(){						          
-												             var jsonResponse = eval("("+this.responseText+")");						            												          	 						            
-												          	 if(jsonResponse.ok=='ok'){												          	 	
-												          	 	$.mobile.changePage("#list", { transition: "slideup"});
-												          	 }else{
-												          	 	$.mobile.changePage("#logUser", { transition: "slideup"});	
-												          	 }					         
-												          }
-												        });
+											      		$.ajax({
+						       								   url: "http://77.228.245.51/Spring/rest/dao/login?user="+username+"&pass="+login,
+													           type: "GET",
+													           dataType: 'json',
+													           cache : false,													         
+													            success: function ( data ) {
+
+														           	if(data.ok=='ok'){
+														          	 	controlUser.setUserStorage(data.username,data.password,data.companyName,data.companyId,data.role);
+																		controlPage.createMenuPrincipal();
+														          	 	$.mobile.changePage("#menu", { transition: "slideup"});														          	 	
+														          	 }else{																		
+														          	 	$.mobile.changePage("#logUser", { transition: "slideup"});												          	 	
+														          	 }
+														          }
+													        });		
 											      	},											      
 											      	logUser: function(){
 											      		var username =$("#username").val();
-											      		var login =$("#password").val();
-											      		
-											      		var url = "http://10.0.2.2:9090/Spring/rest/dao/login?user="+username+"&pass="+login;
-											        	x$.data = {};
-												        $('ul').html("");
-												        x$("#userToLog").xhr(url,{
-												          error: function(){alert("failed"+this.responseText)},
-												          callback: function(){						          
-												             var jsonResponse = eval("("+this.responseText+")");						            
-												          	 if(jsonResponse.ok=='ok'){
-												          	 	controlUser.setUserStorage(jsonResponse.username,jsonResponse.password);
-												          	 	$.mobile.changePage("#list", { transition: "slideup"});
-												          	 	
-												          	 }else{
-												          	 	$.mobile.changePage("#logUser", { transition: "slideup"});												          	 	
-												          	 }		         
-												          }
-												        });
+											      		var login =$("#password").val();											      	
+											      		var url = "http://10.0.2.2:9090/Spring/rest/dao/login"; 
+											        
+																//10.0.2.2		        	                  						       
+						       							$.ajax({
+						       								   url: "http://77.228.245.51/Spring/rest/dao/login?user="+username+"&pass="+login,
+													           type: "GET",
+													           dataType: 'json',
+													           cache : false,													         
+													            success: function ( data ) {														           
+														           	if(data.ok=='ok'){
+														          	 	controlUser.setUserStorage(data.username,data.password,data.companyName,data.companyId,data.role);
+																		controlPage.createMenuPrincipal();
+														          	 	$.mobile.changePage("#menu", { transition: "slideup"});
+														          	 	
+														          	 }else{
+																		$("#error.login").text(Translation.getText(1,null));
+														          	 	$.mobile.changePage("#logUser", { transition: "slideup"});												          	 	
+														          	 }
+														          }
+													        });													      						          												           
 											      	},
-											      	setUserStorage: function(user,password){
+											      	setUserStorage: function(user,password,companyName,companyId,idioma,role){
 											      		window.localStorage.setItem("user.username",user);
-											      		window.localStorage.setItem("user.login",password);											      		
-											      	}
+											      		window.localStorage.setItem("user.login",password);		
+														window.localStorage.setItem("user.role",role);	
+														window.localStorage.setItem("user.companyName",companyName);
+														window.localStorage.setItem("user.companyId",companyId);
+														window.localStorage.setItem("user.idioma",idioma);
+											      	},
+													deleteUserStorage: function(){
+											      		window.localStorage.removeItem("user.username");
+											      		window.localStorage.removeItem("user.login");	
+														window.localStorage.removeItem("user.role");
+														window.localStorage.removeItem("user.companyName");
+														window.localStorage.removeItem("user.companyId");
+														window.localStorage.removeItem("user.idioma");
+											      	},
+											      	deleteUser: function(){
+						      
+												        var url = "http://77.228.245.51/Spring/rest/dao/delete?user="+userToDelete.getName();
+												        
+												        	$.ajax({
+												       			url: url,
+														        type: "GET",
+																dataType: 'json',
+																cache : false,													         
+																success: function ( data ) {	
+																 						   navigator.notification.alert("DELETED");   																			           
+																				           db.transaction(queryDeleteUsers, errorCB);																					             	
+																				           $.mobile.changePage("#insert", { transition: "slideup"});
+																				          }
+																});	
+						     						 },						     				
+						     						 insertUser: function(user,pass){
+						      
+												        var url = "http://77.228.245.51/Spring/rest/dao/insert?user="+user+"&pass="+pass;
+												        
+												        	$.ajax({
+												       			url: url,
+														        type: "GET",
+																dataType: 'json',
+																cache : false,													         
+																success: function ( data ) {
+																				       navigator.notification.alert("SAVED");   																				          
+																				          }
+																});	
+						     						 }
 						      }
-						      controlUser._init();			
-						      controlUser.check();			   
+						      controlUser._init();
+							  controlPage._init();
+							  controlDB._init();
+							  controlClient._init();
+						      controlUser.check();		
+						   		   
 					</script>
         </head>  
-        <body id="bdy" >  
+        <body id="bdy" > 
         <div data-role="page" id="logUser" >
         	<div data-role="header">
 				<h1>LOGIN</h1>
 			</div>
-        	<div data-role="content" >
-    				
-	   				 <input name="username" id="username" placeholder="Text input" value="" data-clear-btn="true" type="text">
-	   				 <input name="password" id="password" placeholder="Text input" value="" data-clear-btn="true" type="password">
+        	<div data-role="content" >    				
+	   				<label for="username" id="usernameLabel"></span> <input name="username" id="username" placeholder="Text input" value="" data-clear-btn="true" type="text">
+	   				<label for="password" id="passwordLabel"></span> <input name="password" id="password" placeholder="Text input" value="" data-clear-btn="true" type="password">
 	       	</div>			
 			<div data-role="footer">
-					<h4><p><a href="#" data-role="button" id="userToLog" onclick="controlUser.logUser();">ENTER</a></p></h4>
+					<h4><p><a href="#" data-role="button" id="user" onclick="controlUser.logUser();"><label  id="enterLabel"></span></a></p></h4><br>
+					<h4><p><span id="error.login" style="color: red;" ></span></p></h4>
 			</div>
-		</div>
-        <div data-role="page" id="list" >
+		</div> 
+		<div data-role="page" id="menu" >
 	        	<div data-role="header">
-					<h1>Users</h1>
+					<h1>Catalog</h1>
 				</div>
 	        	<div data-role="content" >
-	       		
-		       		 <ul data-role="listview" data-inset="true" data-filter="true">
-					    <li><a href="#">Acura</a></li>
-					    <li><a href="#">Audi</a></li>
-					    <li><a href="#">BMW</a></li>
-					    <li><a href="#">Cadillac</a></li>
-					    <li><a href="#">Ferrari</a></li>
+					
+		       		<ul id="menuList" data-role="listview" data-inset="true" data-filter="true">
+					  
 					</ul>
 				</div>
 				<div data-role="footer">
 					<h4><p><a href="#insert">Insert User</a></p></h4>
+					<h4><p><a href="pages/capture.html">Video</a></p></h4>
 				</div>
 		</div>
+        <div data-role="page" id="clients" >
+	        	<div data-role="header">
+					<h1>Users</h1>
+				</div>
+	        	<div data-role="content" >
+					<ul id="clientsList" data-role="listview" data-inset="true" data-filter="true">
+					  
+					</ul>
+		       		 
+				</div>
+				<div data-role="footer">
+					<h4><p><a href="#insert">Insert User</a></p></h4>
+					<h4><p><a href="pages/capture.html">Video</a></p></h4>
+				</div>
+		</div>
+       
 		<div data-role="page" id="insert" >
         	<div data-role="header">
 				<h1>Users</h1>
@@ -225,9 +389,9 @@
         	<div data-role="content" >
     			<label for="firstname">User name:</label>
     			<input name="firstname" id="firstname" placeholder="Text input" value="" data-clear-btn="true" type="text">
+    			<input name="passNewUser" id="passNewUser" placeholder="Text input" value="" data-clear-btn="true" type="text">
 	            
-	   				 <a href="#" data-role="button" onclick="saveToStorage();">Save to storage</a>  
-	   				 <a href="#" data-role="button" id="search_tweet_button" class="btn" onclick="callWebService();">Load Users</a>  
+	   				 <a href="#" data-role="button" onclick="saveToStorage();">Save to storage</a>  	   				
  
 	            <div id="tweet" ></div>
        		
@@ -242,7 +406,7 @@
 			</div>
         	<div data-role="content" >
     				
-	   				 <a href="#" data-role="button" id="userToDelete" onclick="deleteUser();">Delete the user</a>  
+	   				 <a href="#" data-role="button" id="userToDelete" onclick="controlUser.deleteUser();">Delete the user</a>  
 	       	</div>			
 			<div data-role="footer">
 					<h4><p><a href="#list">List</a></p></h4>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+    <html>  
+      <head>  
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <link rel="stylesheet" type="text/css" href="css/index.css" />
+        <link rel="stylesheet" type="text/css" href="css/jquery.min.css" />
+        <title>Online</title>        	  
+    		
+             	<script type="text/javascript" src="cordova-2.5.0.js"></script>
+             	<script type="text/javascript" charset="utf-8" src="json2.js"></script>
+              	<script type="text/javascript" src="js/jquery.js"></script>
+              	<script type="text/javascript" src="js/jQueryMobile.js"></script>
+		      	<script type="text/javascript" charset="utf-8">  
+		      
+		      
+		      			$(document).on("mobileinit", function(){
+						  $.mobile.allowCrossDomainPages = true;
+						  $.support.cors = true;						
+						});
+						
+						var videoControl ={
+							_init: function(){
+								this._self= this;
+							},
+							captureSuccess: function(mediaFiles) {
+						        var i, len;
+						        for (i = 0, len = mediaFiles.length; i < len; i += 1) {
+						            uploadFile(mediaFiles[i]);
+						        }       
+						    },
+						    captureError: function(error) {
+						        var msg = 'Error during capture: ' + error.code;
+						        navigator.notification.alert(msg, null, 'Uh oh!');
+						    },
+						     captureVideo: function() {
+        						navigator.device.capture.captureVideo(captureSuccess, captureError, {limit: 1});
+    						},
+    						uploadFile: function(mediaFile) {
+						        var ft = new FileTransfer(),
+						            path = mediaFile.fullPath,
+						            name = mediaFile.name;
+						
+						        ft.upload(path,
+						            "http://77.228.245.51/Spring/rest/dao/video",
+						            function(result) {
+						                console.log('Subida correcta');						               
+						            },
+						            function(error) {
+						                console.log('Error en la subida del fichero ' + path + ': ' + error.code);
+						            },
+						            { fileName: name });   
+						    }
+						}
+    
+				</script>
+        </head>  
+        <body id="bdy" > 
+        <div data-role="page" id="captur" >
+        	<div data-role="header">
+				<h1>VIDEO</h1>
+			</div>
+        	<div data-role="content" >
+    				
+	   				 <h1>Captura un video</h1>
+	       	</div>			
+			<div data-role="footer">
+					<h4><p><a href="#" data-role="button" id="user" onclick="videoControl.captureVideo();">CAPTURE</a></p></h4>
+			</div>
+		</div> 
+      
+ 	 	</body> 
+    </html>  

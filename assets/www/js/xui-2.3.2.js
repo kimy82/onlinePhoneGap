@@ -1340,8 +1340,11 @@ xui.extend({
             url = location;
             location = 'inner';
         }
-
+        var that=null;
+		var req= new XMLHttpRequest();
         var o = options ? options : {};
+        this.xmlHttpRequest=null;
+        this.responseText=null;
         
         if (typeof options == "function") {
             // FIXME kill the console logging
@@ -1352,15 +1355,18 @@ xui.extend({
         };
         
         var that   = this,
-            req    = new XMLHttpRequest(),
+            req    = req,
             method = o.method || 'get',
             async  = (typeof o.async != 'undefined'?o.async:true),
             params = o.data || null,
             key;
-
+	
+		
         req.queryString = params;
+  
+     
         req.open(method, url, async);
-
+      
         // Set "X-Requested-With" header
         req.setRequestHeader('X-Requested-With','XMLHttpRequest');
 
@@ -1376,6 +1382,7 @@ xui.extend({
         req.handleError = (o.error && typeof o.error == 'function') ? o.error : function () {};
         function hdl(){
             if(req.readyState==4) {
+				
                 delete(that.xmlHttpRequest);
                 if(req.status===0 || req.status==200) req.handleResp(); 
                 if((/^[45]/).test(req.status)) req.handleError();
