@@ -7,12 +7,12 @@ var Translation = {
 		$("#passwordLabel").text(this.getText(8,null));
 		$("#enterLabel").text(this.getText(9,null));s		
     },
-    strTrans: {
-    'EN': {'Error: incorrect user','CATALOG','NOTIFICATION','COMPANY','CLIENTS','CREATE PRODUCT','USERNAME','PASSWORD','ENTER'
+    strTrans: {//10
+    'EN': {'Error: incorrect user','CATALOG','NOTIFICATION','COMPANY','CLIENTS','CREATE PRODUCT','USERNAME','PASSWORD','ENTER','There is not internet connection. You can not see new clients or modify or create clients','There is not internet connection',
       }, 
-    'CA': {'Error: usuari incorrecte','CATÀLEG','NOTIFICACIÓ','EMPRESA','CLIENTS','CREA PRODUCTE','USUARI','PASSWORD','ENTRA',
+    'CA': {'Error: usuari incorrecte','CATÀLEG','NOTIFICACIÓ','EMPRESA','CLIENTS','CREA PRODUCTE','USUARI','PASSWORD','ENTRA','No hi ha internet disponible. No es podran veure nous clients ni realitzar operacions sobre aquests','No hi ha connecció internet',
       }, 
-	'ES': {'Error: usuario incorrecto','CATÁLOGO','NOTIFICACIÓN','EMPRESA','CLIENTES','CREA PRODUCTO','USUARIO','PASSWORD','ENTRA',
+	'ES': {'Error: usuario incorrecto','CATÁLOGO','NOTIFICACIÓN','EMPRESA','CLIENTES','CREA PRODUCTO','USUARIO','PASSWORD','ENTRA','No hay internet disponible. No se podran ver nuevos clientes ni realitzar operaciones sobre estos','No hay connexión de internet',
       }, 
     },
     getText: function(num,arguments) {
