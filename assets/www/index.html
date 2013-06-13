@@ -10,6 +10,7 @@
               <script type="text/javascript" src="cordova-2.5.0.js"></script>
               <script type="text/javascript" src="js/jquery.js"></script>
               <script type="text/javascript" src="js/jQueryMobile.js"></script>
+              <script type="text/javascript" src="js/xui-2.3.2.js"></script>
 		      <script type="text/javascript" src="js/index.js"></script>
 			  <script type="text/javascript" src="js/resources.js"></script>
 		      <script type="text/javascript" charset="utf-8">  
@@ -21,12 +22,7 @@
 						
 						});
 						
-						document.addEventListener("deviceready", onDeviceReady, false);
-						function onDeviceReady() {
-						    	console.log("database creating");
-						        db = window.openDatabase("online", "1.0", "StorageCatalog", 200000);
-						        db.transaction(controlDB.populateClientDB, controlDB.errorCB, controlDB.successCB);
-						}
+					
 						
 						  var db = null;
 						  var userToSave=null;
@@ -40,42 +36,7 @@
 								this.getName = function(){
 									return _self.name;
 								}
-							}
-						  var displayHello = function() {  
-									                        var name =      document.getElementById("firstname").value;  
-									                        navigator.notification.alert("name" + name);  
-						            					} 
-						  var saveToStorage = function(){
-															var name =      document.getElementById("firstname").value;
-															var pass =      document.getElementById("passNewUser").value;  
-															controlUser.insertUser(name,pass); 
-															userToSave = new User(name);
-															$('ul').append('<li><a>'+name+'</a></li>').listview('refresh');
-															db.transaction(queryInsertUser, errorCB);
-						
-														}
-						  var showUsers = function(){
-															db.transaction(querySelectUsers, errorCB2);
-													}
-													
-						  
-						    function populateDB(tx) {
-						    	 console.log("table creating");
-						         //tx.executeSql('DROP TABLE IF EXISTS CLIENTS');
-						         tx.executeSql('CREATE TABLE IF NOT EXISTS CLIENTS (name UNIQUE, id UNIQUE)');
-						         //tx.executeSql('INSERT INTO CLIENTS (name) VALUES ("KIMY")');
-						         console.log("table created");
-								 
-						    }
-						    function errorCB(tx, err) {
-						       console.log("Error processing SQL: "+err);
-						    }
-							 function errorCB2(tx, err) {
-						        console.log("Error processing SQL: "+err);
-						    }
-						    function successCB() {
-						        console.log("success!");
-						    }
+							}																			
 						
 						
 							function queryInsertUser(tx) {
@@ -134,12 +95,12 @@
 												fillClient: function(){
 													if(!window.navigator.onLine){
 														console.log("No internet...");
-														navigator.notification.alert(Translation.getText(10,null));  
+														navigator.notification.alert(Translation.getText(10));  
 														return;
 													}
 													console.log("filling clients table");
 													var username = window.localStorage.getItem("user.username");
-													 var url = "http://77.228.245.51/Spring/rest/dao?user="+username;
+													 var url = "http://10.0.2.2:9090/Spring/rest/service/userSrv?user="+username;
 													      $('ul').html("");
 															      $.ajax({
 															       			url: url,
@@ -148,11 +109,12 @@
 																			dataType: 'json',
 																			cache : false,													         
 																			success: function ( jsonResponse ) {
-																					  
+																					 var clientList= document.getElementById("clientsList");
+																					 $(clientList).empty();
 																			          $.each(jsonResponse, function(index, value) { 		
 																					          	if(value.username!='undefined'){       										          		
 																					          			console.log(value.username);
-																										$('ul#clientsList').append('<li><a href="#infoUser" onclick="controlClient.createClient(\''+value.username+'\')" >'+value.username+'</a></li>').listview('refresh');		 		
+																										$(clientList).append('<li><a href="#infoUser" onclick="controlClient.createClient(\''+value.username+'\')" >'+value.username+'</a></li>').listview('refresh');		 		
 																										controlDB.clientArray[index] = new Client(value.username);													
 																								}																						 									       					
 																						});																			
@@ -162,19 +124,30 @@
 													console.log("end filling clients table");
 												},
 												queryInsertUsers: function(tx) {
-													console.log("Inserting clients ");
-										
-													for(i=0;i<userArray.length;i++){	
-														var query = 'INSERT INTO CLIENTS (name) VALUES ("'+userArray[i].getName()+'")';
-														console.log(query);										
-														tx.executeSql(query);
-													}
+													console.log("Inserting clients "+controlDB.clientArray.length);
+													try{
+														for(i=0;i<controlDB.clientArray.length;i++){	
+															if(typeof controlDB.clientArray[i]==='undefined' || typeof controlDB.clientArray[i].getName()==='undefined' ){
+																console.log("client list undefined");
+																
+															}else{
+																var query = 'INSERT INTO CLIENTS (name) VALUES ("'+controlDB.clientArray[i].getName()+'")';
+																console.log(query+"   ::"+i);										
+																tx.executeSql(query);
+															}
+														}
+													}catch(error){console.log("error creating table clients");}
+													console.log("clients inserted");	
 												},
 							 }
 							 var controlPage={	
 												_userRole:"ROLE_CLIENT",
 												_init: function(){
 						      							this._self=this;														
+						      					},
+						      					goToClients: function(){
+						      						$.mobile.changePage("#clients", { transition: "slideup"});	
+													$(document).bind('pagechange',function(){controlDB.fillClient()});
 						      					},
 												createMenuPrincipal: function(){
 													controlPage._initRole();
@@ -190,7 +163,7 @@
 													}
 													
 												},
-												_initRole(){
+												_initRole: function(){
 													var role = window.localStorage.getItem("user.role");
 													if(role!=null){
 														controlPage._userRole=role;
@@ -200,29 +173,44 @@
 													}
 												},
 												_createMenuClient: function(){
-													$('ul#menuList').append('<li><a href="#cataleg">'+Translation.getText(2,null)+'</a></li>').listview('refresh');		 	
-													$('ul#menuList').append('<li><a href="#notificacio">'+Translation.getText(3,null)+'</a></li>').listview('refresh');
-													$('ul#menuList').append('<li><a href="#companyInfo">'+Translation.getText(4,null)+'</a></li>').listview('refresh');
+													console.log("menu inizilization");
+													var list = document.getElementById("menuList");
+													$(list).empty();	
+													$(list).append('<li><a href="#cataleg">'+Translation.getText('1')+'</a></li>');		 	
+													$(list).append('<li><a href="#notificacio">'+Translation.getText('2')+'</a></li>');
+													$(list).append('<li><a href="#companyInfo">'+Translation.getText('3')+'</a></li>');													
+													$(list).listview('refresh');
+													console.log("menu created");
 												},
 												_createMenuAdmin: function(){
+													console.log("menu inizilization");
+													var list = document.getElementById("menuList");		
+													$(list).empty();
+													$(list).append('<li><a href="#cataleg">'+Translation.getText('1')+'</a></li>');		 	
+													$(list).append('<li><a href="#notificacio">'+Translation.getText('2')+'</a></li>');
+													$(list).append('<li><a href="#companyInfo">'+Translation.getText('3')+'</a></li>');
+													$(list).append('<li><a href="#" onclick="controlPage.goToClients()">'+Translation.getText('4')+'</a></li>');
+													$(list).append('<li><a href="#createProduct">'+Translation.getText('5')+'</a></li>');
+													$(list).listview('refresh');
+													console.log("menu created");													
 													
-													$('ul#menuList').append('<li><a href="#cataleg">'+Translation.getText(2,null)+'</a></li>').listview('refresh');		 	
-													$('ul#menuList').append('<li><a href="#notificacio">'+Translation.getText(3,null)+'</a></li>').listview('refresh');
-													$('ul#menuList').append('<li><a href="#companyInfo">'+Translation.getText(4,null)+'</a></li>').listview('refresh');
-													$('ul#menuList').append('<li><a href="#clients">'+Translation.getText(5,null)+'</a></li>').listview('refresh');
-													$('ul#menuList').append('<li><a href="#createProduct">'+Translation.getText(6,null)+'</a></li>').listview('refresh');
-													controlDB.fillClient();
 												},
 												_createMenuSuperAdmin: function(){
+													console.log("menu inizilization");
+													try{												
+														var list = document.getElementById("menuList");		
+														$(list).empty();												
+														$(list).append('<li><a href="#cataleg">'+Translation.getText("1")+'</a></li>');		 	
+														$(list).append('<li><a href="#notificacio">'+Translation.getText("2")+'</a></li>');
+														$(list).append('<li><a href="#companyInfo">'+Translation.getText("3")+'</a></li>');
+														$(list).append('<li><a href="#" onclick="controlPage.goToClients()">'+Translation.getText("4")+'</a></li>');
+														$(list).append('<li><a href="#createProduct">'+Translation.getText("5")+'</a></li>');	 	
+														$(list).listview('refresh');
+														console.log("menu created");
+														
+													}catch(error){console.log("Error creating list"+error);}
 													
-													$('ul#menuList').append('<li><a href="#cataleg">'+Translation.getText(2,null)+'</a></li>').listview('refresh');		 	
-													$('ul#menuList').append('<li><a href="#notificacio">'+Translation.getText(3,null)+'</a></li>').listview('refresh');
-													$('ul#menuList').append('<li><a href="#companyInfo">'+Translation.getText(4,null)+'</a></li>').listview('refresh');
-													$('ul#menuList').append('<li><a href="#clients">'+Translation.getText(5,null)+'</a></li>').listview('refresh');
-													$('ul#menuList').append('<li><a href="#createProduct">'+Translation.getText(6,null)+'</a></li>').listview('refresh');
-													controlDB.fillClient();
-													
-												},
+												},												
 							 
 							 }				      	
 					
@@ -240,6 +228,12 @@
 						      						_init: function(){
 						      							this._self=this;
 						      						},
+						      						logOut: function(){
+						      						
+						      							controlUser.deleteUserStorage();
+						      							$.mobile.changePage("#logUser", { transition: "slideup"});	
+						      							
+						      						},
 											      	check: function(){
 											      		var username = window.localStorage.getItem("user.username");
 											      		var login = window.localStorage.getItem("user.login");
@@ -251,6 +245,7 @@
 											      		}else{
 															controlPage.createMenuPrincipal();
 															$.mobile.changePage("#menu", { transition: "slideup"});	
+															$(document).bind('pagechange',function(){controlPage.createMenuPrincipal()});
 														}
 											      		
 											      	},											      
@@ -259,31 +254,35 @@
 											      		var login =$("#password").val();	
 														if(!window.navigator.onLine){
 															console.log("No internet...");
-															navigator.notification.alert(Translation.getText(11,null));  
+															navigator.notification.alert(Translation.getText(10));  
 															return;
 														}														
 											      		var url = "http://10.0.2.2:9090/Spring/rest/dao/login"; 
 											        
 																//10.0.2.2		        	                  						       
 						       							$.ajax({
-						       								   url: "http://77.228.245.51/Spring/rest/dao/login?user="+username+"&pass="+login,
+						       								   url: "http://10.0.2.2:9090/Spring/rest/service/userSrv/login?user="+username+"&pass="+login,
 													           type: "GET",
 													           dataType: 'json',
 													           cache : false,													         
-													            success: function ( data ) {														           
-														           	if(data.ok=='ok'){
-														          	 	controlUser.setUserStorage(data.username,data.password,data.companyName,data.companyId,data.role);
-																		controlPage.createMenuPrincipal();
-														          	 	$.mobile.changePage("#menu", { transition: "slideup"});
-														          	 	
-														          	 }else{
-																		$("#error.login").text(Translation.getText(1,null));
-														          	 	$.mobile.changePage("#logUser", { transition: "slideup"});												          	 	
-														          	 }
+													            success: function ( data ) {
+													            	try{														           
+															           	if(data.ok=='ok'){
+															          	 	controlUser.setUserStorage(data.username,data.password,data.companyName,data.companyId,data.idioma,data.role);
+															          	 	$.mobile.changePage("#menu", { transition: "slideup"});																																			
+																			$(document).bind('pagechange',function(){controlPage.createMenuPrincipal()});
+																																          	 															          	 	
+															          	 }else{
+															          	 	console.log("ERROR log:"+Translation.getText('0'));
+																			document.getElementById("error.login").innerHTML=Translation.getText('0');
+															          	 	$.mobile.changePage("#logUser", { transition: "slideup"});												          	 	
+															          	 }
+														          	 }catch(error){console.log("ERROR:"+error);}
 														          }
 													        });													      						          												           
 											      	},
 											      	setUserStorage: function(user,password,companyName,companyId,idioma,role){
+											      	    console.log("Saving user to Storage:: user"+user+" password::"+password+" company name ::"+companyName+" ::companyId"+companyId+" idioma::"+idioma+" role::"+role);
 											      		window.localStorage.setItem("user.username",user);
 											      		window.localStorage.setItem("user.login",password);		
 														window.localStorage.setItem("user.role",role);	
@@ -303,10 +302,10 @@
 														
 														if(!window.navigator.onLine){
 															console.log("No internet...");
-															navigator.notification.alert(Translation.getText(11,null));  
+															navigator.notification.alert(Translation.getText(10));  
 															return;
 														}	
-												        var url = "http://77.228.245.51/Spring/rest/dao/delete?user="+userToDelete.getName();
+												        var url = "http://10.0.2.2:9090/Spring/rest/service/userSrv/delete?user="+userToDelete.getName();
 												        
 												        	$.ajax({
 												       			url: url,
@@ -320,14 +319,27 @@
 																				          }
 																});	
 						     						 },						     				
-						     						 insertUser: function(user,pass){
+						     						 insertUser: function(){
 														if(!window.navigator.onLine){
 															console.log("No internet...");
-															navigator.notification.alert(Translation.getText(11,null));  
+															navigator.notification.alert(Translation.getText(10));  
 															return;
 														}
-												        var url = "http://77.228.245.51/Spring/rest/dao/insert?user="+user+"&pass="+pass;
+														
+														var roleObj = document.getElementById("select-choice-1");
+														var role=$(roleObj).val();
+														
+														var idiomaObj = document.getElementById("select-idioma-1");
+														var idioma=$(roleObj).val();
+														
+														var user =window.localStorage.getItem("user.username");
 												        
+												        var tel = document.getElementById("telNewUser").value;
+												        var userToInsert = document.getElementById("firstname").value;
+												        var pass = document.getElementById("passNewUser").value;
+												        
+												        
+												        var url = "http://10.0.2.2:9090/Spring/rest/service/userSrv/insert?user="+user+"&userinsert="+userToInsert+"&pass="+pass+"&role="+role+"&tel="+tel+"&idioma="+idioma;
 												        	$.ajax({
 												       			url: url,
 														        type: "GET",
@@ -339,88 +351,124 @@
 																});	
 						     						 }
 						      }
-						      controlUser._init();
-							  controlPage._init();
-							  controlDB._init();
-							  controlClient._init();
-						      controlUser.check();		
-						   		   
+						      	
+						document.addEventListener("deviceready", onDeviceReady, false);
+						function onDeviceReady() {
+						    	console.log("database creating");
+						        db = window.openDatabase("online", "1.0", "StorageCatalog", 200000);
+						        db.transaction(controlDB.populateClientDB, controlDB.errorCB, controlDB.successCB);
+						        controlUser._init();
+							    controlPage._init();
+							    controlDB._init();
+							    controlClient._init();
+						        controlUser.check();	
+						}	   
 					</script>
         </head>  
         <body id="bdy" > 
-        <div data-role="page" id="logUser" >
-        	<div data-role="header">
-				<h1>LOGIN</h1>
-			</div>
-        	<div data-role="content" >    				
-	   				<label for="username" id="usernameLabel"></span> <input name="username" id="username" placeholder="Text input" value="" data-clear-btn="true" type="text">
-	   				<label for="password" id="passwordLabel"></span> <input name="password" id="password" placeholder="Text input" value="" data-clear-btn="true" type="password">
-	       	</div>			
-			<div data-role="footer">
-					<h4><p><a href="#" data-role="button" id="user" onclick="controlUser.logUser();"><label  id="enterLabel"></span></a></p></h4><br>
-					<h4><p><span id="error.login" style="color: red;" ></span></p></h4>
-			</div>
-		</div> 
-		<div data-role="page" id="menu" >
+        
+	        <div data-role="page" id="logUser" >
 	        	<div data-role="header">
-					<h1>Catalog</h1>
+					<h1>LOGIN</h1>
 				</div>
-	        	<div data-role="content" >
-					
-		       		<ul id="menuList" data-role="listview" data-inset="true" data-filter="true">
-					  
-					</ul>
-				</div>
+	        	<div data-role="content" >    				
+		   				<input name="username" id="username" placeholder="Text input" value="" data-clear-btn="true" type="text">
+		   				<input name="password" id="password" placeholder="Text input" value="" data-clear-btn="true" type="password">
+		       	</div>			
 				<div data-role="footer">
-					<h4><p><a href="#insert">Insert User</a></p></h4>
-					<h4><p><a href="pages/capture.html">Video</a></p></h4>
+						<h4><p><a href="#" data-role="button" id="user" onclick="controlUser.logUser();"></a></p></h4><br>
+						<h4><p><span id="error.login" style="color: red;" ></span></p></h4>
 				</div>
-		</div>
-        <div data-role="page" id="clients" >
+			</div> 
+			
+			<div data-role="page" id="menu" >
+		        	<div data-role="header">
+						<h1>Catalog</h1>
+					</div>
+		        	<div data-role="content" >
+						
+							<ul id="menuList" data-role="listview"  data-inset="true" data-filter="true">
+							  
+							</ul>
+						
+					</div>
+					<div data-role="footer">
+						<h4><p><a href="#" onclick="controlUser.logOut();">LogOut</a></p></h4>
+					</div>
+			</div>
+			
+	        <div data-role="page" id="clients" >
+		        	<div data-role="header">
+						<h1>Users</h1>
+					</div>
+		        	<div data-role="content" >
+						<ul id="clientsList" data-role="listview" data-inset="true" data-filter="true">
+					
+						</ul>
+			       		 
+					</div>
+					<div data-role="footer">
+						<h4><p><a href="#insert">Insert User</a> &nbsp;<a href="#" onclick="controlUser.logOut();">LogOut</a></p></h4>
+					</div>
+			</div>
+       
+			<div data-role="page" id="insert" >
 	        	<div data-role="header">
 					<h1>Users</h1>
 				</div>
 	        	<div data-role="content" >
-					<ul id="clientsList" data-role="listview" data-inset="true" data-filter="true">
-					  
-					</ul>
-		       		 
-				</div>
+	    			<label for="firstname">User name:</label>
+	    			<input name="firstname" id="firstname" placeholder="Text input" value="" data-clear-btn="true" type="text">
+	    			<input name="passNewUser" id="passNewUser" placeholder="Text input" value="" data-clear-btn="true" type="text">
+	    			<input name="telNewUser" id="telNewUser" placeholder="Tel" value="" data-clear-btn="true" type="text">
+		            <div data-role="fieldcontain">
+						<label for="select-choice-1" class="select">Role:</label>
+						<select name="select-choice-1" id="select-choice-1">
+							<option value="standard"  data-placeholder="true" >Escull</option>
+							<option value="admin">ADMIN</option>
+							<option value="client">CLIENT</option>							
+						</select>
+					</div>
+					<div data-role="fieldcontain">
+						<label for="select-choice-1" class="select">Idioma:</label>
+						<select name="select-idioma-1" id="select-idioma-1">
+							<option value="standard"  data-placeholder="true" >Escull</option>
+							<option value="CA">CA</option>
+							<option value="ES">ES</option>							
+							<option value="EN">En</option>
+						</select>
+					</div>
+		   				 <a href="#" data-role="button" onclick="controlUser.insertUser();">Save</a>  	   				
+	 
+		            <div id="tweet" ></div>
+	       		
+		       	</div>			
 				<div data-role="footer">
-					<h4><p><a href="#insert">Insert User</a></p></h4>
-					<h4><p><a href="pages/capture.html">Video</a></p></h4>
+						<h4><p><a href="#list">List</a></p></h4>
 				</div>
-		</div>
-       
-		<div data-role="page" id="insert" >
-        	<div data-role="header">
-				<h1>Users</h1>
 			</div>
-        	<div data-role="content" >
-    			<label for="firstname">User name:</label>
-    			<input name="firstname" id="firstname" placeholder="Text input" value="" data-clear-btn="true" type="text">
-    			<input name="passNewUser" id="passNewUser" placeholder="Text input" value="" data-clear-btn="true" type="text">
-	            
-	   				 <a href="#" data-role="button" onclick="saveToStorage();">Save to storage</a>  	   				
- 
-	            <div id="tweet" ></div>
-       		
-	       	</div>			
-			<div data-role="footer">
-					<h4><p><a href="#list">List</a></p></h4>
-			</div>
-		</div>
-		<div data-role="page" id="infoUser" >
-        	<div data-role="header">
-				<h1>Info User</h1>
-			</div>
-        	<div data-role="content" >
-    				
-	   				 <a href="#" data-role="button" id="userToDelete" onclick="controlUser.deleteUser();">Delete the user</a>  
-	       	</div>			
-			<div data-role="footer">
-					<h4><p><a href="#list">List</a></p></h4>
-			</div>
-		</div>		
+			
+			<div data-role="page" id="infoUser" >
+	        	<div data-role="header">
+					<h1>Info User</h1>
+				</div>
+	        	<div data-role="content" >
+	    				
+		   				 <a href="#" data-role="button" id="userToDelete" onclick="controlUser.deleteUser();">Delete the user</a>  
+		       	</div>			
+				<div data-role="footer">
+						<h4><p><a href="#list">List</a></p></h4>
+				</div>
+			</div>	
+				
  	 	</body> 
+ 	 	<script type="text/javascript" charset="utf-8">  
+ 	 			console.log("omplim params locale");
+				x$("#username").attr('placeholder',Translation.getText('6'));
+				x$("#password").attr('placeholder',Translation.getText('7'));
+				x$("#firstname").attr('placeholder',Translation.getText('6'));
+				x$("#passNewUser").attr('placeholder',Translation.getText('7'));				
+				x$("#user").html(Translation.getText('8'));	
+		
+		</script>
     </html>  
