@@ -13,6 +13,14 @@
               <script type="text/javascript" src="js/xui-2.3.2.js"></script>
 		      <script type="text/javascript" src="js/index.js"></script>
 			  <script type="text/javascript" src="js/resources.js"></script>
+			  <script type="text/javascript" src="js/app/category.js"></script>
+			  <script type="text/javascript" src="js/app/client.js"></script>
+			  <script type="text/javascript" src="js/app/company.js"></script>
+			  <script type="text/javascript" src="js/app/dataBase.js"></script>
+			  <script type="text/javascript" src="js/app/entities.js"></script>
+			  <script type="text/javascript" src="js/app/page.js"></script>
+			  <script type="text/javascript" src="js/app/user.js"></script>
+			  <script type="text/javascript" src="js/app/video.js"></script>
 		      <script type="text/javascript" charset="utf-8">  
 		      
 		      
@@ -21,337 +29,13 @@
 						  $.support.cors = true;
 						
 						});
-						
-					
-						
+									
 						  var db = null;
 						  var userToSave=null;
 						  var userToDelete=null;
 						  var userArray=null;						  
 						  
-						 
-						  function Client(name) {
-								var _self=this;
-								this.name= name;
-								this.getName = function(){
-									return _self.name;
-								}
-							}																			
-						
-						
-							function queryInsertUser(tx) {
-								console.log("User to save= " + userToSave.getName());
-								tx.executeSql('INSERT INTO USERS (name) VALUES ("'+userToSave.getName()+'")');
-							}
-							function queryInsertUsers(tx) {
-								console.log("User to save= ");
-								tx.executeSql('DELETE FROM USERS where 1=1');
-								console.log("Delete");
-								for(i=0;i<userArray.length;i++){	
-									var query = 'INSERT INTO USERS (name) VALUES ("'+userArray[i].getName()+'")';
-									console.log(query);										
-									tx.executeSql('INSERT INTO USERS (name) VALUES ("'+userArray[i].getName()+'")');
-								}
-							}
-							function queryDeleteUsers(tx) {
-																
-									tx.executeSql('DELETE USERS where name='+userToDelete.getName());								
-							}
-							function querySelectUsers(tx) {
-								tx.executeSql('SELECT * FROM USERS', [], querySuccessUser, errorCB2);
-							}
-
-							function querySuccessUser(tx, results) {
-								console.log("Returned rows = " + results.rows.length);
-								var len = results.rows.length;
-								var llistat="";
-								 for (var i=0; i<len; i++){
-									console.log("Row = " + i + " ID = " + results.rows.item(i).name);
-									llistat=llistat+ results.rows.item(i).name+"-";
-								}										
-							}
-							
-						      function createUser(name){
-						       	userToDelete = new User(name);	
-						      }
-							 var controlDB ={
-												_init: function(){
-						      							this._self=this;
-														this.clientArray=new Array();														
-						      					},
-												populateClientDB: function(tx) {
-													 console.log("table creating");
-													 //tx.executeSql('DROP TABLE IF EXISTS CLIENTS');
-													 tx.executeSql('CREATE TABLE IF NOT EXISTS CLIENTS (name UNIQUE)');
-													 //tx.executeSql('INSERT INTO CLIENTS (name) VALUES ("KIMY")');
-													 console.log("table created");													 													 
-												},
-												errorCB: function(tx, err) {
-												   console.log("Error creating client table SQL: "+err);
-												},
-												successCB: function() {
-													console.log("success: client table created!");
-												},
-												fillClient: function(){
-													if(!window.navigator.onLine){
-														console.log("No internet...");
-														navigator.notification.alert(Translation.getText(10));  
-														return;
-													}
-													console.log("filling clients table");
-													var username = window.localStorage.getItem("user.username");
-													 var url = "http://10.0.2.2:9090/Spring/rest/service/userSrv?user="+username;
-													      $('ul').html("");
-															      $.ajax({
-															       			url: url,
-																	        type: "GET",
-																			async: true,
-																			dataType: 'json',
-																			cache : false,													         
-																			success: function ( jsonResponse ) {
-																					 var clientList= document.getElementById("clientsList");
-																					 $(clientList).empty();
-																			          $.each(jsonResponse, function(index, value) { 		
-																					          	if(value.username!='undefined'){       										          		
-																					          			console.log(value.username);
-																										$(clientList).append('<li><a href="#infoUser" onclick="controlClient.createClient(\''+value.username+'\')" >'+value.username+'</a></li>').listview('refresh');		 		
-																										controlDB.clientArray[index] = new Client(value.username);													
-																								}																						 									       					
-																						});																			
-																						db.transaction(controlDB.queryInsertUsers, controlDB.errorCB);		
-																				}
-																	});	
-													console.log("end filling clients table");
-												},
-												queryInsertUsers: function(tx) {
-													console.log("Inserting clients "+controlDB.clientArray.length);
-													try{
-														for(i=0;i<controlDB.clientArray.length;i++){	
-															if(typeof controlDB.clientArray[i]==='undefined' || typeof controlDB.clientArray[i].getName()==='undefined' ){
-																console.log("client list undefined");
-																
-															}else{
-																var query = 'INSERT INTO CLIENTS (name) VALUES ("'+controlDB.clientArray[i].getName()+'")';
-																console.log(query+"   ::"+i);										
-																tx.executeSql(query);
-															}
-														}
-													}catch(error){console.log("error creating table clients");}
-													console.log("clients inserted");	
-												},
-							 }
-							 var controlPage={	
-												_userRole:"ROLE_CLIENT",
-												_init: function(){
-						      							this._self=this;														
-						      					},
-						      					goToClients: function(){
-						      						$.mobile.changePage("#clients", { transition: "slideup"});	
-													$(document).bind('pagechange',function(){controlDB.fillClient()});
-						      					},
-												createMenuPrincipal: function(){
-													controlPage._initRole();
-													if(controlPage._userRole=='ROLE_CLIENT'){
-														controlPage._createMenuClient();
-													}else if(controlPage._userRole=='ROLE_ADMIN'){
-														controlPage._createMenuAdmin();
-													}else if(controlPage._userRole=='ROLE_SUPER_ADMIN'){
-														controlPage._createMenuSuperAdmin();
-													}else{
-														console.log("ERROR: No hi ha role per defecte fem el del client");
-														controlPage._createMenuClient();
-													}
-													
-												},
-												_initRole: function(){
-													var role = window.localStorage.getItem("user.role");
-													if(role!=null){
-														controlPage._userRole=role;
-													}else{
-														console.log("ERROR: No hi ha role per defecte fem el del client");
-														controlPage._userRole='ROLE_CLIENT';
-													}
-												},
-												_createMenuClient: function(){
-													console.log("menu inizilization");
-													var list = document.getElementById("menuList");
-													$(list).empty();	
-													$(list).append('<li><a href="#cataleg">'+Translation.getText('1')+'</a></li>');		 	
-													$(list).append('<li><a href="#notificacio">'+Translation.getText('2')+'</a></li>');
-													$(list).append('<li><a href="#companyInfo">'+Translation.getText('3')+'</a></li>');													
-													$(list).listview('refresh');
-													console.log("menu created");
-												},
-												_createMenuAdmin: function(){
-													console.log("menu inizilization");
-													var list = document.getElementById("menuList");		
-													$(list).empty();
-													$(list).append('<li><a href="#cataleg">'+Translation.getText('1')+'</a></li>');		 	
-													$(list).append('<li><a href="#notificacio">'+Translation.getText('2')+'</a></li>');
-													$(list).append('<li><a href="#companyInfo">'+Translation.getText('3')+'</a></li>');
-													$(list).append('<li><a href="#" onclick="controlPage.goToClients()">'+Translation.getText('4')+'</a></li>');
-													$(list).append('<li><a href="#createProduct">'+Translation.getText('5')+'</a></li>');
-													$(list).listview('refresh');
-													console.log("menu created");													
-													
-												},
-												_createMenuSuperAdmin: function(){
-													console.log("menu inizilization");
-													try{												
-														var list = document.getElementById("menuList");		
-														$(list).empty();												
-														$(list).append('<li><a href="#cataleg">'+Translation.getText("1")+'</a></li>');		 	
-														$(list).append('<li><a href="#notificacio">'+Translation.getText("2")+'</a></li>');
-														$(list).append('<li><a href="#companyInfo">'+Translation.getText("3")+'</a></li>');
-														$(list).append('<li><a href="#" onclick="controlPage.goToClients()">'+Translation.getText("4")+'</a></li>');
-														$(list).append('<li><a href="#createProduct">'+Translation.getText("5")+'</a></li>');	 	
-														$(list).listview('refresh');
-														console.log("menu created");
-														
-													}catch(error){console.log("Error creating list"+error);}
-													
-												},												
-							 
-							 }				      	
-					
-						       var controlClient={
-						      						_init: function(){
-						      							this._self=this;
-														this.client=null;
-						      						},											
-													createClient: function(name){
-														controlClient.client = new Client(name);	
-													},
-												}
-						      
-						      var controlUser={
-						      						_init: function(){
-						      							this._self=this;
-						      						},
-						      						logOut: function(){
-						      						
-						      							controlUser.deleteUserStorage();
-						      							$.mobile.changePage("#logUser", { transition: "slideup"});	
-						      							
-						      						},
-											      	check: function(){
-											      		var username = window.localStorage.getItem("user.username");
-											      		var login = window.localStorage.getItem("user.login");
-														
-											      		if(username==null || login==null){
-															controlUser.deleteUserStorage();
-											      			$.mobile.changePage("#logUser", { transition: "slideup"});	
-															return;
-											      		}else{
-															controlPage.createMenuPrincipal();
-															$.mobile.changePage("#menu", { transition: "slideup"});	
-															$(document).bind('pagechange',function(){controlPage.createMenuPrincipal()});
-														}
-											      		
-											      	},											      
-											      	logUser: function(){
-											      		var username =$("#username").val();
-											      		var login =$("#password").val();	
-														if(!window.navigator.onLine){
-															console.log("No internet...");
-															navigator.notification.alert(Translation.getText(10));  
-															return;
-														}														
-											      		var url = "http://10.0.2.2:9090/Spring/rest/dao/login"; 
-											        
-																//10.0.2.2		        	                  						       
-						       							$.ajax({
-						       								   url: "http://10.0.2.2:9090/Spring/rest/service/userSrv/login?user="+username+"&pass="+login,
-													           type: "GET",
-													           dataType: 'json',
-													           cache : false,													         
-													            success: function ( data ) {
-													            	try{														           
-															           	if(data.ok=='ok'){
-															          	 	controlUser.setUserStorage(data.username,data.password,data.companyName,data.companyId,data.idioma,data.role);
-															          	 	$.mobile.changePage("#menu", { transition: "slideup"});																																			
-																			$(document).bind('pagechange',function(){controlPage.createMenuPrincipal()});
-																																          	 															          	 	
-															          	 }else{
-															          	 	console.log("ERROR log:"+Translation.getText('0'));
-																			document.getElementById("error.login").innerHTML=Translation.getText('0');
-															          	 	$.mobile.changePage("#logUser", { transition: "slideup"});												          	 	
-															          	 }
-														          	 }catch(error){console.log("ERROR:"+error);}
-														          }
-													        });													      						          												           
-											      	},
-											      	setUserStorage: function(user,password,companyName,companyId,idioma,role){
-											      	    console.log("Saving user to Storage:: user"+user+" password::"+password+" company name ::"+companyName+" ::companyId"+companyId+" idioma::"+idioma+" role::"+role);
-											      		window.localStorage.setItem("user.username",user);
-											      		window.localStorage.setItem("user.login",password);		
-														window.localStorage.setItem("user.role",role);	
-														window.localStorage.setItem("user.companyName",companyName);
-														window.localStorage.setItem("user.companyId",companyId);
-														window.localStorage.setItem("user.idioma",idioma);
-											      	},
-													deleteUserStorage: function(){
-											      		window.localStorage.removeItem("user.username");
-											      		window.localStorage.removeItem("user.login");	
-														window.localStorage.removeItem("user.role");
-														window.localStorage.removeItem("user.companyName");
-														window.localStorage.removeItem("user.companyId");
-														window.localStorage.removeItem("user.idioma");
-											      	},
-											      	deleteUser: function(){
-														
-														if(!window.navigator.onLine){
-															console.log("No internet...");
-															navigator.notification.alert(Translation.getText(10));  
-															return;
-														}	
-												        var url = "http://10.0.2.2:9090/Spring/rest/service/userSrv/delete?user="+userToDelete.getName();
-												        
-												        	$.ajax({
-												       			url: url,
-														        type: "GET",
-																dataType: 'json',
-																cache : false,													         
-																success: function ( data ) {	
-																 						   navigator.notification.alert("DELETED");   																			           
-																				           db.transaction(queryDeleteUsers, errorCB);																					             	
-																				           $.mobile.changePage("#insert", { transition: "slideup"});
-																				          }
-																});	
-						     						 },						     				
-						     						 insertUser: function(){
-														if(!window.navigator.onLine){
-															console.log("No internet...");
-															navigator.notification.alert(Translation.getText(10));  
-															return;
-														}
-														
-														var roleObj = document.getElementById("select-choice-1");
-														var role=$(roleObj).val();
-														
-														var idiomaObj = document.getElementById("select-idioma-1");
-														var idioma=$(roleObj).val();
-														
-														var user =window.localStorage.getItem("user.username");
-												        
-												        var tel = document.getElementById("telNewUser").value;
-												        var userToInsert = document.getElementById("firstname").value;
-												        var pass = document.getElementById("passNewUser").value;
-												        
-												        
-												        var url = "http://10.0.2.2:9090/Spring/rest/service/userSrv/insert?user="+user+"&userinsert="+userToInsert+"&pass="+pass+"&role="+role+"&tel="+tel+"&idioma="+idioma;
-												        	$.ajax({
-												       			url: url,
-														        type: "GET",
-																dataType: 'json',
-																cache : false,													         
-																success: function ( data ) {
-																				       navigator.notification.alert("SAVED");   																				          
-																				          }
-																});	
-						     						 }
-						      }
-						      	
+						 																																      							      
 						document.addEventListener("deviceready", onDeviceReady, false);
 						function onDeviceReady() {
 						    	console.log("database creating");
@@ -361,7 +45,10 @@
 							    controlPage._init();
 							    controlDB._init();
 							    controlClient._init();
-						        controlUser.check();	
+						        controlUser.check();
+						        videoControl._init();	
+						        controlCategory._init();
+						        controlCompany._init();
 						}	   
 					</script>
         </head>  
@@ -408,58 +95,125 @@
 			       		 
 					</div>
 					<div data-role="footer">
-						<h4><p><a href="#insert">Insert User</a> &nbsp;<a href="#" onclick="controlUser.logOut();">LogOut</a></p></h4>
+						<h4><p><a href="#captur" id="capturFot">CAPTURA</a>&nbsp;<a href="#" onclick="controlPage.goToMenu()" id="menuFot">Menu</a>&nbsp;<a href="#insert" id="insertFot">Insert User</a> &nbsp;<a href="#" id="logOutFot" onclick="controlUser.logOut();">LogOut</a></p></h4>
 					</div>
 			</div>
        
 			<div data-role="page" id="insert" >
 	        	<div data-role="header">
-					<h1>Users</h1>
+					<h1 id="headerInsertUsers">Users</h1>
 				</div>
 	        	<div data-role="content" >
-	    			<label for="firstname">User name:</label>
+	    			
 	    			<input name="firstname" id="firstname" placeholder="Text input" value="" data-clear-btn="true" type="text">
 	    			<input name="passNewUser" id="passNewUser" placeholder="Text input" value="" data-clear-btn="true" type="text">
 	    			<input name="telNewUser" id="telNewUser" placeholder="Tel" value="" data-clear-btn="true" type="text">
 		            <div data-role="fieldcontain">
-						<label for="select-choice-1" class="select">Role:</label>
+						<label for="select-choice-1" id="labelrole" class="select">Role:</label>
 						<select name="select-choice-1" id="select-choice-1">
-							<option value="standard"  data-placeholder="true" >Escull</option>
-							<option value="admin">ADMIN</option>
-							<option value="client">CLIENT</option>							
+							<option value="standard"  data-placeholder="true" >...</option>
+							<option value="ROLE_ADMIN">ADMIN</option>
+							<option value="ROLE_CLIENT">CLIENT</option>							
 						</select>
 					</div>
 					<div data-role="fieldcontain">
-						<label for="select-choice-1" class="select">Idioma:</label>
+						<label for="select-choice-1" id ="labelidioma" class="select">Idioma:</label>
 						<select name="select-idioma-1" id="select-idioma-1">
-							<option value="standard"  data-placeholder="true" >Escull</option>
+							<option value="standard"  data-placeholder="true" >...</option>
 							<option value="CA">CA</option>
 							<option value="ES">ES</option>							
-							<option value="EN">En</option>
+							<option value="EN">EN</option>
 						</select>
 					</div>
-		   				 <a href="#" data-role="button" onclick="controlUser.insertUser();">Save</a>  	   				
+		   				 <a href="#" id="buttonSaveClient" data-role="button" onclick="controlUser.insertUser();">Save</a>  	   				
 	 
 		            <div id="tweet" ></div>
 	       		
 		       	</div>			
 				<div data-role="footer">
-						<h4><p><a href="#list">List</a></p></h4>
+						<h4><p><a class="menuFotClients" href="#clients">List</a></p></h4>
 				</div>
 			</div>
 			
 			<div data-role="page" id="infoUser" >
 	        	<div data-role="header">
-					<h1>Info User</h1>
+					<h1 id="headerInfoUser" >Info User</h1>
 				</div>
 	        	<div data-role="content" >
 	    				
-		   				 <a href="#" data-role="button" id="userToDelete" onclick="controlUser.deleteUser();">Delete the user</a>  
+		   				 <a href="#" data-role="button" id="userToDelete" onclick="controlUser.deleteUser();">Delete user</a>  
 		       	</div>			
 				<div data-role="footer">
-						<h4><p><a href="#list">List</a></p></h4>
+						<h4><p><a class="menuFotClients" href="#clients">List</a></p></h4>
 				</div>
 			</div>	
+			 <div data-role="page" id="captur" >
+		        	<div data-role="header">
+						<h1>VIDEO</h1>
+					</div>
+		        	<div data-role="content" >
+		    				
+			   				 <h1>Captura un video</h1>
+			       	</div>			
+					<div data-role="footer">
+							<h4><p><a href="#" data-role="button" id="user" onclick="videoControl.captureVideo();">CAPTURE</a></p></h4>
+					</div>
+			</div> 
+			<div data-role="page" id="category" >
+	        	<div data-role="header">
+					<h1 id="headerCategory">Category</h1>
+				</div>
+	        	<div data-role="content" >
+	    			
+	    		
+		            <div data-role="fieldcontain">
+						<label for="categoryList" id="labelCategories" class="select">Categories:</label>
+						<select name="categoryList" id="categoryList" onchange="controlCategory.changeCategory()">
+							<option value="standard"  data-placeholder="true" >...</option>										
+						</select>
+					</div><a href="#" onclick="controlCategory.deleteCategory()" >BORRAR CAT</a>
+					<input name="newCat" id="newCat" placeholder="Text input" value="" data-clear-btn="true" type="text"><a href="#" onclick="controlCategory.createCat()" >CREAR CAT</a>
+					<div data-role="fieldcontain">
+						<label for="categorySubList" id ="labelSubCategories" class="select">Sub Categories:</label>
+						<select name="categorySubList" id="categorySubList" onchange="controlCategory.changeSubCategory()" >
+							<option value="standard"  data-placeholder="true" >...</option>							
+						</select>
+					</div><a href="#" onclick="controlCategory.deleteSubCategory()" >BORRAR SUB CAT</a>
+					<input name="newSubCat" id="newSubCat" disabled=true placeholder="Text input" value="" data-clear-btn="true" type="text"><a href="#" onclick="controlCategory.createSubCat()" >CREAR SUB CAT</a>
+					<div data-role="fieldcontain">
+						<label for="categorySubSubList" id ="labelSubSubCategories" class="select">SubSub Categories:</label>
+						<select name="categorySubSubList" id="categorySubSubList" onchange="">
+							<option value="standard"  data-placeholder="true" >...</option>							
+						</select>
+					</div><a href="#" onclick="controlCategory.deleteSubSubCategory()" >BORRAR SUBSUB CAT</a>		   	
+					<input name="newSubSubCat" id="newSubSubCat" disabled=true placeholder="Text input" value="" data-clear-btn="true" type="text"><a href="#" onclick="controlCategory.createSubSubCat()" >CREAR SUBSUB CAT</a>			  	   					 		        
+	       		
+		       	</div>			
+				<div data-role="footer">
+						<h4><p><a class="menuFotClients" href="#menu">List</a></p></h4>
+				</div>
+			</div>
+			
+			<div data-role="page" id="changeCompany" >
+	        	<div data-role="header">
+					<h1 id="headerChangeCompany">Change company</h1>
+				</div>
+	        	<div data-role="content" >
+	    			
+	    		
+		            <div data-role="fieldcontain">
+						<label for="companyList" id="labelCompany" class="select">Companies:</label>
+						<select name="companyList" id="companyList" onchange="controlCompany.changeCompany()">
+																
+						</select>
+					</div><a href="#" onclick="controlCompany.deleteCompany()" >BORRAR COMPANY</a>
+					<input name="newCompany" id="newCompany" placeholder="Text input" value="" data-clear-btn="true" type="text"><a href="#" onclick="controlCompany.createCompany()" >CREAR COMPANY</a>
+					
+		       	</div>			
+				<div data-role="footer">
+						<h4><p><a class="menuFotClients" href="#menu">List</a></p></h4>
+				</div>
+			</div>
 				
  	 	</body> 
  	 	<script type="text/javascript" charset="utf-8">  
@@ -467,8 +221,31 @@
 				x$("#username").attr('placeholder',Translation.getText('6'));
 				x$("#password").attr('placeholder',Translation.getText('7'));
 				x$("#firstname").attr('placeholder',Translation.getText('6'));
-				x$("#passNewUser").attr('placeholder',Translation.getText('7'));				
+				x$("#passNewUser").attr('placeholder',Translation.getText('7'));
+				x$("#telNewUser").attr('placeholder',Translation.getText('tel'));
 				x$("#user").html(Translation.getText('8'));	
+				document.getElementById("labelidioma").innerHTML=Translation.getText('labelidioma')+":";
+				document.getElementById("labelrole").innerHTML=Translation.getText('labelrole')+":";
+				document.getElementById("headerInsertUsers").innerHTML=Translation.getText('headerInsertUsers')+":";
+				document.getElementById("headerInfoUser").innerHTML=Translation.getText('headerInfoUser')+":";
+				document.getElementById("menuFot").innerHTML=Translation.getText('menuFot');
+				document.getElementById("insertFot").innerHTML=Translation.getText('insertFot');
+				document.getElementById("logOutFot").innerHTML=Translation.getText('logOutFot');
+				document.getElementById("userToDelete").innerHTML=Translation.getText('userToDelete');
+				x$(".menuFotClients").html(Translation.getText('4'));	
+				document.getElementById("buttonSaveClient").innerHTML=Translation.getText('buttonSaveClient');		
+				document.getElementById("headerCategory").innerHTML=Translation.getText('category');				
+				document.getElementById("labelSubSubCategories").innerHTML=Translation.getText('labelSubSubCategories')+":";
+				document.getElementById("labelSubCategories").innerHTML=Translation.getText('labelSubCategories')+":";
+				document.getElementById("labelCategories").innerHTML=Translation.getText('labelCategories')+":";
+				x$("#newCat").attr('placeholder',Translation.getText('newCat'));
+				x$("#newSubSubCat").attr('placeholder',Translation.getText('newSubSubCat'));
+				x$("#newSubCat").attr('placeholder',Translation.getText('newSubCat'));
+				
+				document.getElementById("headerChangeCompany").innerHTML=Translation.getText('changeCompany');
+				document.getElementById("labelCompany").innerHTML=Translation.getText('labelCompany')+":";
+				
+				
 		
 		</script>
     </html>  
