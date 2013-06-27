@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-    <html>  
+    <html ng-app>  
       <head>  
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <meta name="format-detection" content="telephone=no" />
@@ -7,11 +7,15 @@
         <link rel="stylesheet" type="text/css" href="css/index.css" />
         <link rel="stylesheet" type="text/css" href="css/jquery.min.css" />
         <title>Online</title>
+        	
               <script type="text/javascript" src="cordova-2.5.0.js"></script>
+              <script type="text/javascript" src="js/json2.js"></script>
+              <script type="text/javascript" src="js/angular.min.js"></script>             
               <script type="text/javascript" src="js/jquery.js"></script>
               <script type="text/javascript" src="js/jQueryMobile.js"></script>
               <script type="text/javascript" src="js/xui-2.3.2.js"></script>
 		      <script type="text/javascript" src="js/index.js"></script>
+		       <script type="text/javascript" src="js/app/context.js"></script>
 			  <script type="text/javascript" src="js/resources.js"></script>
 			  <script type="text/javascript" src="js/app/category.js"></script>
 			  <script type="text/javascript" src="js/app/client.js"></script>
@@ -20,7 +24,9 @@
 			  <script type="text/javascript" src="js/app/entities.js"></script>
 			  <script type="text/javascript" src="js/app/page.js"></script>
 			  <script type="text/javascript" src="js/app/user.js"></script>
+			  <script type="text/javascript" src="js/app/notif.js"></script>
 			  <script type="text/javascript" src="js/app/video.js"></script>
+		
 		      <script type="text/javascript" charset="utf-8">  
 		      
 		      
@@ -43,30 +49,245 @@
 						        db.transaction(controlDB.populateClientDB, controlDB.errorCB, controlDB.successCB);
 						        controlUser._init();
 							    controlPage._init();
-							    controlDB._init();
+						 	    controlDB._init();
 							    controlClient._init();
 						        controlUser.check();
 						        videoControl._init();	
 						        controlCategory._init();
 						        controlCompany._init();
+						        controlNotif._init();
 						}	   
 					</script>
         </head>  
         <body id="bdy" > 
-        
-	        <div data-role="page" id="logUser" >
+        	
+        	 <div data-role="page" id="logUser" >
 	        	<div data-role="header">
 					<h1>LOGIN</h1>
 				</div>
-	        	<div data-role="content" >    				
-		   				<input name="username" id="username" placeholder="Text input" value="" data-clear-btn="true" type="text">
-		   				<input name="password" id="password" placeholder="Text input" value="" data-clear-btn="true" type="password">
+	        	<div data-role="content" >    	
+	        			<div style="width:30%; margin-left: 35%;" >			
+		   					<input name="username" id="username" placeholder="Text input" value="" data-clear-btn="true" type="text">
+		   				</div>
+		   				<div style="width:30%; margin-left: 35%;" >		
+		   					<input name="password" id="password" placeholder="Text input" value="" data-clear-btn="true" type="password">
+		   				</div>
 		       	</div>			
 				<div data-role="footer">
 						<h4><p><a href="#" data-role="button" id="user" onclick="controlUser.logUser();"></a></p></h4><br>
 						<h4><p><span id="error.login" style="color: red;" ></span></p></h4>
 				</div>
 			</div> 
+			
+			
+        	<div data-role="page" id="changeCompany" >
+	        	<div data-role="header">
+					<h1 id="headerChangeCompany">Change company</h1>
+				</div>
+	        	<div data-role="content" >
+	    			
+	    			<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+	    				<div style="float:left;width:89%" >	
+				            <div data-role="fieldcontain">
+								<label for="companyList" id="labelCompany" class="select">Companies:</label>
+								<select name="companyList" id="companyList" onchange="controlCompany.changeCompany()">
+																		
+								</select>
+							</div>
+						</div>
+						<div style="float:left;width:10%; margin-left:1%;" >
+							<a href="#" data-role="button"  onclick="controlCompany.deleteCompany()" >BORRAR</a>
+						</div>
+					</div>
+					<div style="width:90%; margin-left: 5%; margin-right: 5%;  overflow: hidden;" >
+	    				<div style="float:left;width:89%" >						
+							<input name="newCompany" id="newCompany" ng-model="companyName"  placeholder="Text input" value="" data-clear-btn="true" type="text">
+						</div>
+						<div style="float:left;width:10%; margin-left:1%;" >
+							<button onclick="controlCompany.createCompany()" >CREAR</button>
+						</div>
+					</div>
+					<div style="width:90%; margin-left: 5%; margin-right: 5%; margin-bottom:20px; overflow: hidden;" >
+	    				<div style="float:left;width:50%" >	
+							<input name="descCompany1" id="descCompany1" ng-model="companyDesc1"  placeholder="Text input" value="" data-clear-btn="true" type="text">
+						</div>
+						<div style="float:left;width:45%; margin-left: 5%;  margin-bottom:20px;" >	
+							<button id="addFotoCompany1" disabled="disabled" onclick="controlCompany.captureImage('companyImg1');">Capture Image</button>
+						</div>
+					</div>
+					<div style="width:90%; margin-left: 5%; margin-right: 5%; margin-bottom:20px; overflow: hidden;" >
+	    				<div style="float:left;width:50%" >	
+							<input name="descCompany2" id="descCompany2" ng-model="companyDesc2"  placeholder="Text input" value="" data-clear-btn="true" type="text">
+						</div>
+						<div style="float:left;width:45%; margin-left: 5%;  margin-bottom:20px;" >	
+							<button id="addFotoCompany2" disabled="disabled" onclick="controlCompany.captureImage('companyImg2');">Capture Image</button>
+						</div>
+					</div>
+					
+					<div class="examplePDFCompany">
+						<div style="width:90%; margin-left: 5%; margin-right: 5%; margin-bottom:20px; overflow: hidden;" >
+	    					<div style="float:left;width:40%" >	
+								<input type="range" min="1" max="4" value="2" onchange="changeColumnNoSlider1(event)"  />
+							</div>	
+							<div style="float:left;width:40%; margin-left:10%" >	
+								<input type="range" min="1" max="4" value="2" onchange="changeColumnNoSlider2(event)"  />
+							</div>							
+						</div>					
+					</div>
+					<h1>PREVIEW</h1>
+					<br>
+					<div class="examplePDFCompany">
+						<h1>{{companyName}}</h1>
+						<br>
+					
+								<div id="columns-no-example1" class="example" style="-webkit-column-count: 3;">{{companyDesc1}}
+									<img src="" width="200px" id="companyImg1" >
+								</div>    
+								<div id="columns-no-example2" class="example" style="-webkit-column-count: 3;">{{companyDesc2}}
+									<img src="" width="200px" id="companyImg2" >
+								</div>     																
+					</div>
+					
+					
+		       	</div>			
+				<div data-role="footer">
+						<div style="width:20%; margin-left: 40%; margin-right: 40%; overflow: hidden;" >
+							<h4><p><a class="menuFot" data-role="button" href="#" onclick="controlPage.goToMenu()" >List</a></p></h4>
+						</div>
+				</div>
+			</div>
+        	
+        	<div data-role="page" id="category" >
+	        	<div data-role="header">
+					<h1 id="headerCategory">Category</h1>
+				</div>
+	        	<div data-role="content" >
+	    			
+	    			<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+	    				<div style="float:left;width:97%" >	
+				            <div data-role="fieldcontain">
+								<label for="categoryList" id="labelCategories" class="select">Categories:</label>
+								<select name="categoryList" id="categoryList" onchange="controlCategory.changeCategory()">
+									<option value="standard"  data-placeholder="true" >...</option>										
+								</select>
+							</div>
+						</div>
+						<div style="float:left;width:2%; margin-left:1%;" >	
+							<a href="#"  onclick="controlCategory.deleteCategory()" ><img src="img/delete.png" style="margin-top:20px;" /></a>
+						</div>
+					</div>
+					<div style="width:71%; margin-left: 24%; margin-right: 5%; overflow: hidden;" >
+	    				<div style="float:left;width:97%" >	
+							<input name="newCat" id="newCat" placeholder="Text input" value="" data-clear-btn="true" type="text">
+						</div>
+						<div style="float:left;width:2%; margin-left:1%;" >	
+							<a href="#" onclick="controlCategory.createCat()" ><img src="img/save.png" style="margin-top:20px;" /></a>
+						</div>
+					</div>
+					
+					
+					<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+	    				<div style="float:left;width:97%" >	
+							<div data-role="fieldcontain">
+								<label for="categorySubList" id ="labelSubCategories" class="select">Sub Categories:</label>
+								<select name="categorySubList" id="categorySubList" onchange="controlCategory.changeSubCategory()" >
+									<option value="standard"  data-placeholder="true" >...</option>							
+								</select>
+							</div>
+						</div>	
+						<div style="float:left;width:2%; margin-left:1%;" >
+							<a href="#" onclick="controlCategory.deleteSubCategory()" ><img src="img/delete.png" style="margin-top:20px;" /></a>	
+						</div>
+					</div>
+					<div style="width:71%; margin-left: 24%; margin-right: 5%; overflow: hidden;" >
+	    				<div style="float:left;width:97%" >	
+							<input name="newSubCat" id="newSubCat" disabled=true placeholder="Text input" value="" data-clear-btn="true" type="text">
+						</div>
+						<div style="float:left;width:2%; margin-left:1%;" >	
+							<a href="#" onclick="controlCategory.createSubCat()" ><img src="img/save.png" style="margin-top:20px;" /></a>
+						</div>
+					</div>
+					
+					<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+	    				<div style="float:left;width:97%" >	
+							<div data-role="fieldcontain">
+								<label for="categorySubSubList" id ="labelSubSubCategories" class="select">SubSub Categories:</label>
+								<select name="categorySubSubList" id="categorySubSubList" onchange="">
+									<option value="standard"  data-placeholder="true" >...</option>							
+								</select>
+							</div>
+						</div>
+						<div style="float:left;width:2%; margin-left:1%;" >
+							<a href="#" onclick="controlCategory.deleteSubSubCategory()" ><img src="img/delete.png" style="margin-top:20px;" /></a>		   
+						</div>	
+					</div>
+					<div style="width:71%; margin-left: 24%; margin-right: 5%; overflow: hidden;" >
+	    				<div style="float:left;width:97%" >	
+							<input name="newSubSubCat" id="newSubSubCat" disabled=true placeholder="Text input" value="" data-clear-btn="true" type="text">
+						</div>
+						<div style="float:left;width:2%; margin-left:1%;" >	
+							<a href="#" onclick="controlCategory.createSubSubCat()" ><img src="img/save.png" style="margin-top:20px;" /></a>
+						</div>
+					</div>			  	   					 		        
+	       		
+		       	</div>			
+				<div data-role="footer">
+						<div style="width:20%; margin-left: 40%; margin-right: 40%; overflow: hidden;" >
+							<h4><p><a class="menuFot" data-role="button" href="#" onclick="controlPage.goToMenu()" >List</a></p></h4>
+						</div>
+				</div>
+			</div>
+        	<div data-role="page" id="insert" >
+	        	<div data-role="header">
+					<h1 id="headerInsertUsers">Users</h1>
+				</div>
+	        	<div data-role="content" >
+	    			<div style="width:70%; margin-left: 15%; margin-right: 15%; overflow: hidden;" >	
+	    				<div style="float:left;width:33%" >	
+		    				<input name="firstname" id="firstname" placeholder="Text input" value="" data-clear-btn="true" type="text">
+		    			</div>
+		    			<div style="float:left;width:30%;margin-left: 3%;" >
+		    				<input name="passNewUser" id="passNewUser" placeholder="Text input" value="" data-clear-btn="true" type="text">
+		    			</div>
+		    			<div style="float:left;width:30%; margin-left: 3%;" >
+		    				<input name="telNewUser" id="telNewUser" placeholder="Tel" value="" data-clear-btn="true" type="text">
+		    			</div>
+	    			</div>
+	    			<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+	    				<div style="width:50%; float: left;">
+				            <div data-role="fieldcontain">
+								<label for="select-choice-1" id="labelrole" class="select">Role:</label>
+								<select name="select-choice-1" id="select-choice-1">
+									<option value="standard"  data-placeholder="true" >...</option>
+									<option value="ROLE_ADMIN">ADMIN</option>
+									<option value="ROLE_CLIENT">CLIENT</option>							
+								</select>
+							</div>
+						</div>
+						<div style="width:45%; float: left;  margin-left: 5%; ">
+							<div data-role="fieldcontain">
+								<label for="select-choice-1" id ="labelidioma" class="select">Idioma:</label>
+								<select name="select-idioma-1" id="select-idioma-1">
+									<option value="standard"  data-placeholder="true" >...</option>
+									<option value="CA">CA</option>
+									<option value="ES">ES</option>							
+									<option value="EN">EN</option>
+								</select>
+							</div>
+						</div>
+					</div>
+						<div style="width:20%; margin-left: 40%; margin-right: 40%;" >
+		   					 <a href="#" id="buttonSaveClient" data-role="button" onclick="controlUser.insertUser();">Save</a>
+		   				</div>  	   				
+	 
+		            <div id="tweet" ></div>
+	       		
+		       	</div>			
+				<div data-role="footer">
+						<h4><p><a class="menuFotClients" href="#clients">List</a></p></h4>
+				</div>
+			</div>
+	       
 			
 			<div data-role="page" id="menu" >
 		        	<div data-role="header">
@@ -80,7 +301,7 @@
 						
 					</div>
 					<div data-role="footer">
-						<h4><p><a href="#" onclick="controlUser.logOut();">LogOut</a></p></h4>
+						<h4><p><a href="#" data-role="button" onclick="controlUser.logOut();">LogOut</a></p></h4>
 					</div>
 			</div>
 			
@@ -95,45 +316,11 @@
 			       		 
 					</div>
 					<div data-role="footer">
-						<h4><p><a href="#captur" id="capturFot">CAPTURA</a>&nbsp;<a href="#" onclick="controlPage.goToMenu()" id="menuFot">Menu</a>&nbsp;<a href="#insert" id="insertFot">Insert User</a> &nbsp;<a href="#" id="logOutFot" onclick="controlUser.logOut();">LogOut</a></p></h4>
+						<h4><p><a href="#captur" data-role="button" id="capturFot">CAPTURA</a>&nbsp;<a href="#" data-role="button" onclick="controlPage.goToMenu()" id="menuFot">Menu</a>&nbsp;<a href="#insert" data-role="button" id="insertFot">Insert User</a> &nbsp;<a href="#" data-role="button" id="logOutFot" onclick="controlUser.logOut();">LogOut</a></p></h4>
 					</div>
 			</div>
        
-			<div data-role="page" id="insert" >
-	        	<div data-role="header">
-					<h1 id="headerInsertUsers">Users</h1>
-				</div>
-	        	<div data-role="content" >
-	    			
-	    			<input name="firstname" id="firstname" placeholder="Text input" value="" data-clear-btn="true" type="text">
-	    			<input name="passNewUser" id="passNewUser" placeholder="Text input" value="" data-clear-btn="true" type="text">
-	    			<input name="telNewUser" id="telNewUser" placeholder="Tel" value="" data-clear-btn="true" type="text">
-		            <div data-role="fieldcontain">
-						<label for="select-choice-1" id="labelrole" class="select">Role:</label>
-						<select name="select-choice-1" id="select-choice-1">
-							<option value="standard"  data-placeholder="true" >...</option>
-							<option value="ROLE_ADMIN">ADMIN</option>
-							<option value="ROLE_CLIENT">CLIENT</option>							
-						</select>
-					</div>
-					<div data-role="fieldcontain">
-						<label for="select-choice-1" id ="labelidioma" class="select">Idioma:</label>
-						<select name="select-idioma-1" id="select-idioma-1">
-							<option value="standard"  data-placeholder="true" >...</option>
-							<option value="CA">CA</option>
-							<option value="ES">ES</option>							
-							<option value="EN">EN</option>
-						</select>
-					</div>
-		   				 <a href="#" id="buttonSaveClient" data-role="button" onclick="controlUser.insertUser();">Save</a>  	   				
-	 
-		            <div id="tweet" ></div>
-	       		
-		       	</div>			
-				<div data-role="footer">
-						<h4><p><a class="menuFotClients" href="#clients">List</a></p></h4>
-				</div>
-			</div>
+			
 			
 			<div data-role="page" id="infoUser" >
 	        	<div data-role="header">
@@ -144,7 +331,7 @@
 		   				 <a href="#" data-role="button" id="userToDelete" onclick="controlUser.deleteUser();">Delete user</a>  
 		       	</div>			
 				<div data-role="footer">
-						<h4><p><a class="menuFotClients" href="#clients">List</a></p></h4>
+						<h4><p><a class="menuFotClients" href="#clients" data-role="button">List</a></p></h4>
 				</div>
 			</div>	
 			 <div data-role="page" id="captur" >
@@ -159,59 +346,57 @@
 							<h4><p><a href="#" data-role="button" id="user" onclick="videoControl.captureVideo();">CAPTURE</a></p></h4>
 					</div>
 			</div> 
-			<div data-role="page" id="category" >
+			
+			
+			
+			<!--ultimes notificacions-->
+			<div data-role="page" id="notificacions" >
 	        	<div data-role="header">
-					<h1 id="headerCategory">Category</h1>
+					<h1 id="headerNotificacions"></h1>
 				</div>
 	        	<div data-role="content" >
 	    			
 	    		
-		            <div data-role="fieldcontain">
-						<label for="categoryList" id="labelCategories" class="select">Categories:</label>
-						<select name="categoryList" id="categoryList" onchange="controlCategory.changeCategory()">
-							<option value="standard"  data-placeholder="true" >...</option>										
-						</select>
-					</div><a href="#" onclick="controlCategory.deleteCategory()" >BORRAR CAT</a>
-					<input name="newCat" id="newCat" placeholder="Text input" value="" data-clear-btn="true" type="text"><a href="#" onclick="controlCategory.createCat()" >CREAR CAT</a>
-					<div data-role="fieldcontain">
-						<label for="categorySubList" id ="labelSubCategories" class="select">Sub Categories:</label>
-						<select name="categorySubList" id="categorySubList" onchange="controlCategory.changeSubCategory()" >
-							<option value="standard"  data-placeholder="true" >...</option>							
-						</select>
-					</div><a href="#" onclick="controlCategory.deleteSubCategory()" >BORRAR SUB CAT</a>
-					<input name="newSubCat" id="newSubCat" disabled=true placeholder="Text input" value="" data-clear-btn="true" type="text"><a href="#" onclick="controlCategory.createSubCat()" >CREAR SUB CAT</a>
-					<div data-role="fieldcontain">
-						<label for="categorySubSubList" id ="labelSubSubCategories" class="select">SubSub Categories:</label>
-						<select name="categorySubSubList" id="categorySubSubList" onchange="">
-							<option value="standard"  data-placeholder="true" >...</option>							
-						</select>
-					</div><a href="#" onclick="controlCategory.deleteSubSubCategory()" >BORRAR SUBSUB CAT</a>		   	
-					<input name="newSubSubCat" id="newSubSubCat" disabled=true placeholder="Text input" value="" data-clear-btn="true" type="text"><a href="#" onclick="controlCategory.createSubSubCat()" >CREAR SUBSUB CAT</a>			  	   					 		        
-	       		
+		           <ul id="notifList">
+					
+				   </ul>
 		       	</div>			
 				<div data-role="footer">
-						<h4><p><a class="menuFotClients" href="#menu">List</a></p></h4>
+						<h4><p><a class="menuFot" href="#" onclick="controlPage.goToMenu()" >List</a>&nbsp;<a class="menuEnvia" href="#" onclick="controlPage.goToEnviaNotif()" >EnviaNotif</a></p></h4>
 				</div>
 			</div>
-			
-			<div data-role="page" id="changeCompany" >
+			<!--notificacions a un usuari-->
+			<div data-role="page" id="notifPrivate" >
 	        	<div data-role="header">
-					<h1 id="headerChangeCompany">Change company</h1>
+					<h1 id="headerNotificacionsPrive"></h1>
 				</div>
 	        	<div data-role="content" >
 	    			
 	    		
-		            <div data-role="fieldcontain">
-						<label for="companyList" id="labelCompany" class="select">Companies:</label>
-						<select name="companyList" id="companyList" onchange="controlCompany.changeCompany()">
-																
-						</select>
-					</div><a href="#" onclick="controlCompany.deleteCompany()" >BORRAR COMPANY</a>
-					<input name="newCompany" id="newCompany" placeholder="Text input" value="" data-clear-btn="true" type="text"><a href="#" onclick="controlCompany.createCompany()" >CREAR COMPANY</a>
+		           <ul id="notifPriveList">
 					
+				   </ul>
+				   	<input name="newNotif" id="newNotif" placeholder="" value="" data-clear-btn="true" type="text"><a href="#" onclick="controlNotif.enviaNotif()" >ENVIA</a>
 		       	</div>			
 				<div data-role="footer">
-						<h4><p><a class="menuFotClients" href="#menu">List</a></p></h4>
+						<h4><p><a class="menuFot" href="#" onclick="controlPage.goToMenu()" ></a></p></h4>
+				</div>
+			</div>
+			<!--Llista de contactes-->
+			<div data-role="page" id="enviaNotif" >
+	        	<div data-role="header">
+					<h1 id="headerNotificacionsEnvia"></h1>
+				</div>
+	        	<div data-role="content" >
+	    			
+	    		
+		           <ul id="notifSearchUser">
+					
+				   </ul>
+				  
+		       	</div>			
+				<div data-role="footer">
+						<h4><p><a class="menuFot" href="#" onclick="controlPage.goToMenu()" ></a></p></h4>
 				</div>
 			</div>
 				
@@ -228,7 +413,7 @@
 				document.getElementById("labelrole").innerHTML=Translation.getText('labelrole')+":";
 				document.getElementById("headerInsertUsers").innerHTML=Translation.getText('headerInsertUsers')+":";
 				document.getElementById("headerInfoUser").innerHTML=Translation.getText('headerInfoUser')+":";
-				document.getElementById("menuFot").innerHTML=Translation.getText('menuFot');
+				x$(".menuFot").html(Translation.getText('menuFot'));
 				document.getElementById("insertFot").innerHTML=Translation.getText('insertFot');
 				document.getElementById("logOutFot").innerHTML=Translation.getText('logOutFot');
 				document.getElementById("userToDelete").innerHTML=Translation.getText('userToDelete');
@@ -244,6 +429,13 @@
 				
 				document.getElementById("headerChangeCompany").innerHTML=Translation.getText('changeCompany');
 				document.getElementById("labelCompany").innerHTML=Translation.getText('labelCompany')+":";
+				document.getElementById("headerNotificacions").innerHTML=Translation.getText('headerNotificacions');
+				x$(".menuEnvia").html(Translation.getText('menuEnvia'));	
+				
+				x$("#newCompany").attr('placeholder',Translation.getText('newCompany'));
+				x$("#descCompany1").attr('placeholder',Translation.getText('descCompany1'));
+				x$("#descCompany2").attr('placeholder',Translation.getText('descCompany2'));
+				
 				
 				
 		

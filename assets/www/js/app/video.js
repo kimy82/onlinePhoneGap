@@ -22,7 +22,7 @@ var videoControl ={
 								alert(path);
 								alert(name);
 						        ft.upload(path,
-						            "http://10.0.2.2:9090/Spring/rest/service/userSrv/video",
+						            "http://"+contextURL+"/Spring/rest/service/userSrv/video",
 						            function(result) {
 						                console.log('Subida correcta');						               
 						            },

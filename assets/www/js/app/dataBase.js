@@ -5,15 +5,17 @@
 														this.clientArray=new Array();	
 														this.categoryArray=new Array();		
 														this.companyArray= new Array();										
+														this.notifArray= new Array();	
 						      					},
 						      					_clientfilled:false,
 												_categoryfilled: false,						      											      			
 												populateClientDB: function(tx) {
 													 console.log("table creating");
 													 //tx.executeSql('DROP TABLE IF EXISTS CATEGORY');
-													 tx.executeSql('CREATE TABLE IF NOT EXISTS CLIENTS (name UNIQUE)');
+													 tx.executeSql('CREATE TABLE IF NOT EXISTS CLIENTS (name UNIQUE,role)');
 													 tx.executeSql('CREATE TABLE IF NOT EXISTS CATEGORY (name, type,supername,id)');
 													 tx.executeSql('CREATE TABLE IF NOT EXISTS COMPANY (name,id)');
+													 tx.executeSql('CREATE TABLE IF NOT EXISTS NOTIFICACIONS (id,notif,date,username1,username2,sent,recieved)');
 													 //tx.executeSql('INSERT INTO CLIENTS (name) VALUES ("KIMY")');
 													 console.log("table created");													 													 
 												},
@@ -29,6 +31,7 @@
 													 tx.executeSql('DELETE FROM CLIENTS where 1=1');
 													 tx.executeSql('DELETE FROM CATEGORY where 1=1');
 													 tx.executeSql('DELETE FROM COMPANY where 1=1');
+													 tx.executeSql('DELETE FROM NOTIFICACIONS where 1=1');
 													});
 													console.log("taules borrades en logout");
 												},
@@ -70,7 +73,7 @@
 														   		console.log("FALSE CAT"); 
 														   		console.log("filling categories table");
 																var companyId = window.localStorage.getItem("user.companyId");
-																var url = "http://10.0.2.2:9090/Spring/rest/service/userSrv/categoryFill?companyId="+companyId;
+																var url = "http://"+contextURL+"/Spring/rest/service/userSrv/categoryFill?companyId="+companyId;
 													    		$('ul').html("");
 															    $.ajax({
 															       			url: url,
@@ -116,7 +119,7 @@
 														 }, null);
 													});
 													return false;
-												},	
+												},													
 												checkClientFilled: function(){
 													db.transaction(function (tx) {
 													   tx.executeSql('SELECT * FROM CLIENTS', [], function (tx, results) {
@@ -127,7 +130,7 @@
 														   }else{
 														   	console.log("filling clients table");
 															var username = window.localStorage.getItem("user.username");
-															 var url = "http://10.0.2.2:9090/Spring/rest/service/userSrv?user="+username;
+															 var url = "http://"+contextURL+"/Spring/rest/service/userSrv?user="+username;
 															      $('ul').html("");
 																	      $.ajax({
 																	       			url: url,
@@ -142,7 +145,7 @@
 																							          	if(value.username!='undefined'){       										          		
 																							          			console.log(value.username);
 																												$(clientList).append('<li><a href="#infoUser" onclick="controlClient.createClient(\''+value.username+'\')" >'+value.username+'</a></li>').listview('refresh');		 		
-																												controlDB.clientArray[index] = new Client(value.username);													
+																												controlDB.clientArray[index] = new Client(value.username,value.role);													
 																										}																						 									       					
 																								});																			
 																								db.transaction(controlDB.queryInsertUsers, controlDB.errorCB);		
@@ -151,6 +154,122 @@
 															console.log("end filling clients table");
 														   }
 														 }, null);
+													});
+													return false;
+												},												
+												fillNotificacionsSearchUser: function(){
+													db.transaction(function (tx) {
+													   tx.executeSql('SELECT * FROM CLIENTS', [], function (tx, results) {
+														   var len = results.rows.length;
+														   var role= window.localStorage.getItem("user.role");
+														   if(parseInt(len)>0){	
+																var notifSearchUser= document.getElementById("notifSearchUser");
+																$(notifSearchUser).empty();
+														   		try{
+																 for (var i=0; i<len; i++){		
+																	if(role=='ROLE_SUPER_ADMIN' || role=='ROLE_ADMIN'){
+																		$(notifSearchUser).append('<li><a href="#" class="notif" onclick="controlPage.goToNotifPrivate(\''+results.rows.item(i).name+'\')"  >'+results.rows.item(i).name+'&nbsp;('+results.rows.item(i).role+')</a></li>');		 																																																																			
+																	}else{
+																		$(notifSearchUser).append('<li><a href="#" class="notif" onclick="controlPage.goToNotifPrivate(\''+results.rows.item(i).name+'\')"  >'+results.rows.item(i).name+'</a></li>');		 																																																																			
+																	}
+																}	
+																}catch(error){console.log(error);}												   		
+														   }else{
+														   	console.log("filling clients  serch for sent notif table");
+															var username = window.localStorage.getItem("user.username");
+															
+															 var url = "http://"+contextURL+"/Spring/rest/service/userSrv?user="+username;
+															      $('ul').html("");
+																	      $.ajax({
+																	       			url: url,
+																			        type: "GET",
+																					async: true,
+																					dataType: 'json',
+																					cache : false,													         
+																					success: function ( jsonResponse ) {
+																							 var notifSearchUser= document.getElementById("notifSearchUser");
+																							 $(notifSearchUser).empty();
+																					          $.each(jsonResponse, function(index, value) { 		
+																							          	if(value.username!='undefined'){       										          		
+																							          			console.log(value.username);
+																												if(role=='ROLE_SUPER_ADMIN' || role=='ROLE_ADMIN'){
+																													$(notifSearchUser).append('<li><a href="#" class="notif" onclick="controlPage.goToNotifPrivate(\''+value.username+'\')"  >'+value.username+' &nbsp; ('+value.role+')</a></li>');		 		
+																												}else{
+																													$(notifSearchUser).append('<li><a href="#" class="notif" onclick="controlPage.goToNotifPrivate(\''+value.username+'\')"  >'+value.username+'</a></li>');		 		
+																												}
+																												
+																												controlDB.clientArray[index] = new Client(value.username,value.role);													
+																										}																						 									       					
+																								});																			
+																								db.transaction(controlDB.queryInsertUsers, controlDB.errorCB);		
+																						}
+																			});	
+															console.log("end filling clients table");
+														   }
+														 }, null);
+													});
+													return false;
+												},
+												checkNotificacions: function(){
+														db.transaction(function (tx) {
+													    tx.executeSql('DELETE FROM NOTIFICACIONS where 1=1');
+														 
+														   var username = window.localStorage.getItem("user.username");
+ 
+														   		 
+														   		
+																
+																var url = "http://"+contextURL+"/Spring/rest/service/userSrv/getNotificacions?user="+username;
+													    		
+															    $.ajax({
+															       			url: url,
+																	        type: "GET",
+																			async: true,
+																			dataType: 'json',
+																			cache : false,													         
+																			success: function ( jsonResponse ) {
+																					var notifList= document.getElementById("notifList");
+														   		
+																 					$(notifList).empty();	
+																					 try{
+																						  var userAnterior="";
+																				          $.each(jsonResponse, function(index, value) { 	
+																									var  numItera=0;
+																						          	if(value.user1== username){       										          		
+																						          			console.log("user 1"+value.user1);
+																												if(numItera<100 && userAnterior!=value.user2){
+																													userAnterior=value.user2;
+																													if(value.sent==true && value.recieved==true){
+																														$(notifList).append('<li class="notifuser1" onclick="controlPage.goToNotifPrivate(\''+value.user2+'\')" >'+value.notif+'&nbsp;('+value.date+' &nbsp; '+value.user2+') !!</li>');
+																													}else if (value.sent==true && value.recieved==false){
+																														$(notifList).append('<li class="notifuser1" onclick="controlPage.goToNotifPrivate(\''+value.user2+'\')" >'+value.notif+'&nbsp;('+value.date+' &nbsp; '+value.user2+') !</li>');
+																													}else if (value.sent==false && value.recieved==false){
+																														$(notifList).append('<li class="notifuser1" onclick="controlPage.goToNotifPrivate(\''+value.user2+'\')" >'+value.notif+'&nbsp;('+value.date+' &nbsp; '+value.user2+')</li>');
+																													}
+																														
+																													
+																												}
+																												numItera=numItera+1;
+																						          				controlDB.notifArray[index] = new Notificacions(value.notif,value.id,value.user1,value.user2,value.date,value.sent,value.recieved);																							          																													 																																							
+																									}else{
+																												
+																												if(numItera<100 && userAnterior!=value.user1){
+																													$(notifList).append('<li class="notifuser2" onclick="controlPage.goToNotifPrivate('+value.user1+')" >'+value.notif+'&nbsp;('+value.date+' &nbsp; '+value.user1+')</li>');
+																													numItera=numItera+1;
+																													userAnterior=value.user1;
+																												}
+																												
+																												
+																						          				controlDB.notifArray[index] = new Notificacions(value.notif,value.id,value.user1,value.user2,value.date,value.sent,value.recieved);																							          																													 																																							
+																									}
+																							});		
+																						}catch(error){console.log("ERROR filling notif")};																	
+																						db.transaction(controlDB.queryInsertNotif, controlDB.errorCB);		
+																			}
+																	});	
+																	console.log("end filling notif table");		
+														   
+														 
 													});
 													return false;
 												},
@@ -182,7 +301,7 @@
 														   		console.log("FALSE COM"); 
 														   		console.log("filling companies table");
 																
-																var url = "http://10.0.2.2:9090/Spring/rest/service/userSrv/companyFill";
+																var url = "http://"+contextURL+"/Spring/rest/service/userSrv/companyFill";
 													    		
 															    $.ajax({
 															       			url: url,
@@ -223,7 +342,8 @@
 														navigator.notification.alert(Translation.getText(10));  
 														return;
 													}												
-													controlDB._clientfilled = controlDB.checkClientFilled();																										
+													controlDB._clientfilled = controlDB.checkClientFilled();
+													$(document).unbind('pagechange');													
 												},
 												fillCategories: function(){
 													if(!window.navigator.onLine){
@@ -242,6 +362,14 @@
 													}
 													 controlDB.checkCompanyFilled();	
 												},
+												fillNotificacions: function(){
+													if(!window.navigator.onLine){
+														console.log("No internet...");
+														navigator.notification.alert(Translation.getText(10));  
+														return;
+													}
+													 controlDB.checkNotificacions();	
+												},
 												queryInsertUsers: function(tx) {
 													console.log("Inserting clients "+controlDB.clientArray.length);
 													try{
@@ -250,7 +378,7 @@
 																console.log("client list undefined");
 																
 															}else{
-																var query = 'INSERT INTO CLIENTS (name) VALUES ("'+controlDB.clientArray[i].getName()+'")';
+																var query = 'INSERT INTO CLIENTS (name,role) VALUES ("'+controlDB.clientArray[i].getName()+'","'+controlDB.clientArray[i].getRole()+'")';
 																console.log(query+"   ::"+i);										
 																tx.executeSql(query);
 															}
@@ -288,6 +416,23 @@
 													}catch(error){console.log("error creating table company");}
 													console.log("companies inserted");
 												},
+												queryInsertNotif: function(tx){
+													console.log("Inserting notif "+controlDB.notifArray.length);
+													try{
+														for(i=0;i<controlDB.notifArray.length;i++){	
+															if(typeof controlDB.notifArray[i]==='undefined' || typeof controlDB.notifArray[i].getNotif()==='undefined' ){
+																console.log("notif list undefined");																
+															}else{
+															
+																var query = 'INSERT INTO NOTIFICACIONS (id,notif,date,username1,username2,sent,recieved) VALUES ("'+controlDB.notifArray[i].getId()+'","'+controlDB.notifArray[i].getNotif()+'","'+controlDB.notifArray[i].getDate()+'","'+controlDB.notifArray[i].getUser1()+'","'+controlDB.notifArray[i].getUser2()+'","'+controlDB.notifArray[i].getSent()+'","'+controlDB.notifArray[i].getRecieved()+'")';
+																
+																									
+																tx.executeSql(query);
+															}
+														}
+													}catch(error){console.log("error creating table notif");}
+													console.log("notif inserted");
+												},
 												queryDeleteCategory: function(tx) {
 													console.log("Delete category ");
 													try{
@@ -318,4 +463,35 @@
 													}catch(error){console.log("error deleting category");}
 													console.log("company deleted");
 												},
-							 }
+												querySelectNotifPrivates: function(user){
+														console.log("get privates notif "+user);
+														var notifPriveList= document.getElementById("notifPriveList");
+														$(notifPriveList).empty();
+														db.transaction(function (tx) {
+															var url='SELECT * FROM NOTIFICACIONS WHERE username1="'+user+'" or username2="'+user+'"';
+															tx.executeSql(url, [], function (tx, results) {
+															   var len = results.rows.length;
+															   console.log("Num regiestres de private notif::"+len);
+															   var companyId = window.localStorage.getItem("user.companyId");
+															   if(parseInt(len)>0){
+																	try{
+																	 for (var i=0; i<len; i++){																															
+																		if(results.rows.item(i).username2==user){
+																			if(results.rows.item(i).recieved=='true'){
+																				$(notifPriveList).append('<li class="notifpriveFromMe"  >'+results.rows.item(i).notif+' &nbsp; ("'+results.rows.item(i).date+'") !!</li>');																			
+																			}else{
+																				$(notifPriveList).append('<li class="notifpriveFromMe"  >'+results.rows.item(i).notif+' &nbsp; ("'+results.rows.item(i).date+'") !</li>');																			
+																			}
+																			
+																		}else{
+																			$(notifPriveList).append('<li class="notifpriveToMe"  >'+results.rows.item(i).notif+' &nbsp; ("'+results.rows.item(i).date+'")</li>');
+																		}																																																																				
+																	}	
+																	}catch(error){console.log(error);}		
+															   }
+															});
+														});
+														
+													console.log("private notes printed");
+												},
+											}

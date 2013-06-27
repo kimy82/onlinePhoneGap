@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+    <html>  
+      <head>  
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <link rel="stylesheet" type="text/css" href="css/index.css" />
+        <link rel="stylesheet" type="text/css" href="css/jquery.min.css" />
+        <title>Online</title>
+              <script type="text/javascript" src="cordova-2.5.0.js"></script>
+              <script type="text/javascript" src="js/jquery.js"></script>
+              <script type="text/javascript" src="js/jQueryMobile.js"></script>
+              <script type="text/javascript" src="js/xui-2.3.2.js"></script>
+		      <script type="text/javascript" src="js/index.js"></script>
+			  <script type="text/javascript" src="js/resources.js"></script>
+		      <script type="text/javascript" charset="utf-8">  
+		      
+		      
+		      			$(document).on("mobileinit", function(){
+						  $.mobile.allowCrossDomainPages = true;
+						  $.support.cors = true;
+						
+						});
+						
+					
+						
+						  var db = null;
+						  var userToSave=null;
+						  var userToDelete=null;
+						  var userArray=null;						  
+						  
+						 
+						  function Client(name) {
+								var _self=this;
+								this.name= name;
+								this.getName = function(){
+									return _self.name;
+								}
+							}
+						 function Category(name,type,supername) {
+								var _self=this;
+								this.name= name;
+								this.type=type;
+								this.supername=supername;
+								this.getName = function(){
+									return _self.name;
+								}
+								this.getType = function(){
+									return _self.type;
+								}
+								this.getSuperName = function(){
+									return _self.supername;
+								}
+							}																			
+						
+						
+						
+						
+
+							function querySuccessUser(tx, results) {
+								console.log("Returned rows = " + results.rows.length);
+								var len = results.rows.length;
+								var llistat="";
+								 for (var i=0; i<len; i++){
+									console.log("Row = " + i + " ID = " + results.rows.item(i).name);
+									llistat=llistat+ results.rows.item(i).name+"-";
+								}										
+							}
+							
+						 
+							 var controlDB ={
+												_init: function(){
+						      							this._self=this;
+														this.clientArray=new Array();	
+														this.categoryArray=new Array();												
+						      					},
+												populateClientDB: function(tx) {
+													 console.log("table creating");
+													 //tx.executeSql('DROP TABLE IF EXISTS CLIENTS');
+													 tx.executeSql('CREATE TABLE IF NOT EXISTS CLIENTS (name UNIQUE)');
+													 tx.executeSql('CREATE TABLE IF NOT EXISTS CATEGORY (name, type,supername)');
+													 //tx.executeSql('INSERT INTO CLIENTS (name) VALUES ("KIMY")');
+													 console.log("table created");													 													 
+												},
+												errorCB: function(tx, err) {
+												   console.log("Error creating client table SQL: "+err);
+												},												
+												successCB: function() {
+													console.log("success: client table created!");
+												},
+												emptyAllDB: function(){
+												
+													db.transaction(function (tx) {
+													 tx.executeSql('DELETE FROM CLIENTS where 1=1');
+													 tx.executeSql('DELETE FROM CATEGORY where 1=1');
+													});
+													console.log("taules borrades en logout");
+												},
+												checkCategoryFilled: function(){
+													db.transaction(function (tx) {
+													   tx.executeSql('SELECT * FROM CATEGORY', [], function (tx, results) {
+														   var len = results.rows.length, i;
+														   console.log("Num regiestres de categories"+len);
+														   if(len>0)return true;
+														   else return false;
+														 }, null);
+													});
+													return false;
+												},	
+												checkClientFilled: function(){
+													db.transaction(function (tx) {
+													   tx.executeSql('SELECT * FROM CLIENTS', [], function (tx, results) {
+														   var len = results.rows.length, i;
+														   console.log("Num regiestres de clients"+len);
+														   if(len>0)return true;
+														   else return false;
+														 }, null);
+													});
+													return false;
+												},											
+												fillClient: function(){
+													if(!window.navigator.onLine){
+														console.log("No internet...");
+														navigator.notification.alert(Translation.getText(10));  
+														return;
+													}
+													var clientfilled = controlDB.checkClientFilled();
+													if(clientfilled==true){
+														console.log("clients already has values");
+														return;
+													}
+													console.log("filling clients table");
+													var username = window.localStorage.getItem("user.username");
+													 var url = "http://localhost:9090/Spring/rest/service/userSrv?user="+username;
+													      $('ul').html("");
+															      $.ajax({
+															       			url: url,
+																	        type: "GET",
+																			async: true,
+																			dataType: 'json',
+																			cache : false,													         
+																			success: function ( jsonResponse ) {
+																					 var clientList= document.getElementById("clientsList");
+																					 $(clientList).empty();
+																			          $.each(jsonResponse, function(index, value) { 		
+																					          	if(value.username!='undefined'){       										          		
+																					          			console.log(value.username);
+																										$(clientList).append('<li><a href="#infoUser" onclick="controlClient.createClient(\''+value.username+'\')" >'+value.username+'</a></li>').listview('refresh');		 		
+																										controlDB.clientArray[index] = new Client(value.username);													
+																								}																						 									       					
+																						});																			
+																						db.transaction(controlDB.queryInsertUsers, controlDB.errorCB);		
+																				}
+																	});	
+													console.log("end filling clients table");
+												},
+												fillCategories: function(){
+													if(!window.navigator.onLine){
+														console.log("No internet...");
+														navigator.notification.alert(Translation.getText(10));  
+														return;
+													}
+													var categoryfilled = controlDB.checkCategoryFilled();
+													if(categoryfilled==true){
+														console.log("categories already has values");
+														return;
+													}
+													
+													console.log("filling categories table");
+													var companyId = window.localStorage.getItem("user.companyId");
+													var url = "http://localhost:9090/Spring/rest/service/userSrv/categoryFill?companyId="+companyId;
+													      $('ul').html("");
+															      $.ajax({
+															       			url: url,
+																	        type: "GET",
+																			async: true,
+																			dataType: 'json',
+																			cache : false,													         
+																			success: function ( jsonResponse ) {
+																					 var categoryList= document.getElementById("categoryList");
+																					 var categorySubList= document.getElementById("categorySubList");
+																					 var categorySubSubList= document.getElementById("categorySubSubList");
+																					 $(categoryList).empty();
+																					 $(categorySubList).empty();
+																					 $(categorySubSubList).empty();
+																					 try{
+																				          $.each(jsonResponse, function(index, value) { 		
+																						          	if(value.name!='undefined'){       										          		
+																						          			console.log("category name"+value.name);
+																						          			if(value.type=='N0'){
+																						          				$(categoryList).append('<option value="'+value.name+'" >'+value.name+'</option>');
+																						          				controlDB.categoryArray[index] = new Category(value.name,value.type,value.superCategoryName);	
+																						          			}else if(value.type=='N1'){
+																						          				$(categorySubList).append('<option value="'+value.name+'" >'+value.name+'</option>');
+																						          				controlDB.categoryArray[index] = new Category(value.name,value.type,value.superCategoryName);	
+																						          			}else if(value.type=='N2'){
+																						          				$(categorySubSubList).append('<option value="'+value.name+'" >'+value.name+'</option>');
+																						          				controlDB.categoryArray[index] = new Category(value.name,value.type,value.superCategoryName);	
+																						          			}else{
+																						          				console.log("category with no type"+value.name);																					          				
+																						          			}
+																													 		
+																																							
+																									}																						 									       					
+																							});		
+																						}catch(error){console.log("ERROR filling categories")};																	
+																						db.transaction(controlDB.queryInsertCategories, controlDB.errorCB);		
+																				}
+																	});	
+													console.log("end filling categories table");
+												},
+												queryInsertUsers: function(tx) {
+													console.log("Inserting clients "+controlDB.clientArray.length);
+													try{
+														for(i=0;i<controlDB.clientArray.length;i++){	
+															if(typeof controlDB.clientArray[i]==='undefined' || typeof controlDB.clientArray[i].getName()==='undefined' ){
+																console.log("client list undefined");
+																
+															}else{
+																var query = 'INSERT INTO CLIENTS (name) VALUES ("'+controlDB.clientArray[i].getName()+'")';
+																console.log(query+"   ::"+i);										
+																tx.executeSql(query);
+															}
+														}
+													}catch(error){console.log("error creating table clients");}
+													console.log("clients inserted");	
+												},
+												queryInsertCategories: function(tx) {
+													console.log("Inserting categories "+controlDB.categoryArray.length);
+													try{
+														for(i=0;i<controlDB.categoryArray.length;i++){	
+															if(typeof controlDB.categoryArray[i]==='undefined' || typeof controlDB.categoryArray[i].getName()==='undefined' ){
+																console.log("category list undefined");																
+															}else{
+																var query = 'INSERT INTO CATEGORY (name,type,supername) VALUES ("'+controlDB.categoryArray[i].getName()+'","'+controlDB.categoryArray[i].getType()+'","'+controlDB.categoryArray[i].getSuperName()+'")';
+																console.log(query+"   ::"+i);										
+																tx.executeSql(query);
+															}
+														}
+													}catch(error){console.log("error creating table category");}
+													console.log("clients inserted");	
+												},
+							 }
+							 var controlPage={	
+												_userRole:"ROLE_CLIENT",
+												_init: function(){
+						      							this._self=this;														
+						      					},
+						      					goToClients: function(){
+						      						$.mobile.changePage("#clients", { transition: "slideup"});	
+													$(document).bind('pagechange',function(){controlDB.fillClient()});
+						      					},
+						      					goToCategory: function(){
+						      												      							
+						      							$.mobile.changePage("#category", { transition: "slideup"});	
+						      							$(document).bind('pagechange',function(){controlDB.fillCategories()});
+						      					},
+						      					goToMenu: function(){
+						      						$.mobile.changePage("#menu", { transition: "slideup"});	
+													$(document).bind('pagechange',function(){controlPage.createMenuPrincipal();});
+						      					},
+												createMenuPrincipal: function(){
+													controlPage._initRole();
+													if(controlPage._userRole=='ROLE_CLIENT'){
+														controlPage._createMenuClient();
+													}else if(controlPage._userRole=='ROLE_ADMIN'){
+														controlPage._createMenuAdmin();
+													}else if(controlPage._userRole=='ROLE_SUPER_ADMIN'){
+														controlPage._createMenuSuperAdmin();
+													}else{
+														console.log("ERROR: No hi ha role per defecte fem el del client");
+														controlPage._createMenuClient();
+													}
+													
+												},
+												_initRole: function(){
+													var role = window.localStorage.getItem("user.role");
+													if(role!=null){
+														controlPage._userRole=role;
+													}else{
+														console.log("ERROR: No hi ha role per defecte fem el del client");
+														controlPage._userRole='ROLE_CLIENT';
+													}
+												},
+												_createMenuClient: function(){
+													console.log("menu inizilization");
+													var list = document.getElementById("menuList");
+													$(list).empty();	
+													$(list).append('<li><a href="#cataleg">'+Translation.getText('1')+'</a></li>');		 	
+													$(list).append('<li><a href="#notificacio">'+Translation.getText('2')+'</a></li>');
+													$(list).append('<li><a href="#companyInfo">'+Translation.getText('3')+'</a></li>');													
+													$(list).listview('refresh');
+													console.log("menu created");
+												},
+												_createMenuAdmin: function(){
+													console.log("menu inizilization");
+													var list = document.getElementById("menuList");		
+													$(list).empty();
+													$(list).append('<li><a href="#cataleg">'+Translation.getText('1')+'</a></li>');		 	
+													$(list).append('<li><a href="#notificacio">'+Translation.getText('2')+'</a></li>');
+													$(list).append('<li><a  href="#" onclick="controlPage.goToCategory()">'+Translation.getText('category')+'</a></li>');
+													$(list).append('<li><a href="#companyInfo">'+Translation.getText('3')+'</a></li>');
+													$(list).append('<li><a href="#" onclick="controlPage.goToClients()">'+Translation.getText('4')+'</a></li>');
+													$(list).append('<li><a href="#createProduct">'+Translation.getText('5')+'</a></li>');
+													$(list).listview('refresh');
+													console.log("menu created");													
+													
+												},
+												_createMenuSuperAdmin: function(){
+													console.log("menu inizilization");
+													try{												
+														var list = document.getElementById("menuList");		
+														$(list).empty();												
+														$(list).append('<li><a href="#cataleg">'+Translation.getText("1")+'</a></li>');		 	
+														$(list).append('<li><a href="#notificacio">'+Translation.getText("2")+'</a></li>');
+														$(list).append('<li><a href="#" onclick="controlPage.goToCategory()">'+Translation.getText('category')+'</a></li>');
+														$(list).append('<li><a href="#companyInfo">'+Translation.getText("3")+'</a></li>');
+														$(list).append('<li><a href="#" onclick="controlPage.goToClients()">'+Translation.getText("4")+'</a></li>');
+														$(list).append('<li><a href="#createProduct">'+Translation.getText("5")+'</a></li>');	 	
+														$(list).listview('refresh');
+														console.log("menu created");
+														
+													}catch(error){console.log("Error creating list"+error);}
+													
+												},												
+							 
+							 }				      	
+					
+						       var controlClient={
+						      						_init: function(){
+						      							this._self=this;
+														this.client=null;
+						      						},											
+													createClient: function(name){
+														controlClient.client = new Client(name);	
+													},
+												}
+						      
+						      var controlUser={
+						      						_init: function(){
+						      							this._self=this;
+						      						},
+						      						logOut: function(){
+						      						
+						      							controlUser.deleteUserStorage();
+						      							controlDB.emptyAllDB();
+						      							$.mobile.changePage("#logUser", { transition: "slideup"});	
+						      							
+						      						},
+											      	check: function(){
+											      		var username = window.localStorage.getItem("user.username");
+											      		var login = window.localStorage.getItem("user.login");
+														
+											      		if(username==null || login==null){
+															controlUser.deleteUserStorage();
+											      			$.mobile.changePage("#logUser", { transition: "slideup"});	
+															return;
+											      		}else{
+															controlPage.createMenuPrincipal();
+															$.mobile.changePage("#menu", { transition: "slideup"});	
+															$(document).bind('pagechange',function(){controlPage.createMenuPrincipal()});
+														}
+											      		
+											      	},											      
+											      	logUser: function(){
+											      		var username =$("#username").val();
+											      		var login =$("#password").val();	
+														if(!window.navigator.onLine){
+															console.log("No internet...");
+															navigator.notification.alert(Translation.getText(10));  
+															return;
+														}														
+											      		var url = "http://localhost:9090/Spring/rest/dao/login"; 
+											        
+																//localhost		        	                  						       
+						       							$.ajax({
+						       								   url: "http://localhost:9090/Spring/rest/service/userSrv/login?user="+username+"&pass="+login,
+													           type: "GET",
+													           dataType: 'json',
+													           cache : false,													         
+													            success: function ( data ) {
+													            	try{														           
+															           	if(data.ok=='ok'){
+															          	 	controlUser.setUserStorage(data.username,data.password,data.companyName,data.companyId,data.idioma,data.role);
+															          	 	$.mobile.changePage("#menu", { transition: "slideup"});																																			
+																			$(document).bind('pagechange',function(){controlPage.createMenuPrincipal()});
+																																          	 															          	 	
+															          	 }else{
+															          	 	console.log("ERROR log:"+Translation.getText('0'));
+																			document.getElementById("error.login").innerHTML=Translation.getText('0');
+															          	 	$.mobile.changePage("#logUser", { transition: "slideup"});												          	 	
+															          	 }
+														          	 }catch(error){console.log("ERROR:"+error);}
+														          }
+													        });													      						          												           
+											      	},
+											      	setUserStorage: function(user,password,companyName,companyId,idioma,role){
+											      	    console.log("Saving user to Storage:: user"+user+" password::"+password+" company name ::"+companyName+" ::companyId"+companyId+" idioma::"+idioma+" role::"+role);
+											      		window.localStorage.setItem("user.username",user);
+											      		window.localStorage.setItem("user.login",password);		
+														window.localStorage.setItem("user.role",role);	
+														window.localStorage.setItem("user.companyName",companyName);
+														window.localStorage.setItem("user.companyId",companyId);
+														window.localStorage.setItem("user.idioma",idioma);
+											      	},
+													deleteUserStorage: function(){
+											      		window.localStorage.removeItem("user.username");
+											      		window.localStorage.removeItem("user.login");	
+														window.localStorage.removeItem("user.role");
+														window.localStorage.removeItem("user.companyName");
+														window.localStorage.removeItem("user.companyId");
+														window.localStorage.removeItem("user.idioma");
+											      	},
+											      	deleteUser: function(){
+														
+														if(!window.navigator.onLine){
+															console.log("No internet...");
+															navigator.notification.alert(Translation.getText(10));  
+															return;
+														}
+														try{	
+														var user =controlClient.client.getName();
+														}catch(error){
+														console.log("Error getting client"+error);
+														}
+												        var url = "http://localhost:9090/Spring/rest/service/userSrv/delete?user="+user;
+												        
+												        	$.ajax({
+												       			url: url,
+														        type: "GET",
+																dataType: 'json',
+																cache : false,													         
+																success: function ( data ) {	
+																 						   navigator.notification.alert("DELETED");   																			           
+																				           db.transaction(queryDeleteUsers, errorCB);																					             	
+																				           $.mobile.changePage("#insert", { transition: "slideup"});
+																				          }
+																});	
+						     						 },						     				
+						     						 insertUser: function(){
+														if(!window.navigator.onLine){
+															console.log("No internet...");
+															navigator.notification.alert(Translation.getText(10));  
+															return;
+														}
+														
+														var roleObj = document.getElementById("select-choice-1");
+														var role=$(roleObj).val();
+														
+														var idiomaObj = document.getElementById("select-idioma-1");
+														var idioma=$(idiomaObj).val();
+														
+														var user =window.localStorage.getItem("user.username");
+												        
+												        var tel = document.getElementById("telNewUser").value;
+												        var userToInsert = document.getElementById("firstname").value;
+												        var pass = document.getElementById("passNewUser").value;
+												        
+												        
+												        var url = "http://localhost:9090/Spring/rest/service/userSrv/insert?user="+user+"&userinsert="+userToInsert+"&pass="+pass+"&role="+role+"&tel="+tel+"&idioma="+idioma;
+												        	$.ajax({
+												       			url: url,
+														        type: "GET",
+																dataType: 'json',
+																cache : false,													         
+																success: function ( data ) {
+																				       navigator.notification.alert("SAVED");   																				          
+																				          }
+																});	
+						     						 }
+						      }
+						      
+						   var controlCategory={
+						      						_init: function(){
+						      							this._self=this;
+						      						},						      						
+											      	changeCategory: function(){
+											      		var categoryObj = document.getElementById("categoryList");
+														var category=$(categoryObj).val();
+														
+														
+														var resultsSubCats = controlCategory._selectSubCategory(category);
+														
+														
+														$(categorySubList).empty();
+														$(categorySubSubList).empty();
+														
+														$.each(resultsSubCats, function(index, value) { 	
+														
+															$(categorySubList).append('<option value="'+value.name+'" >'+value.name+'</option>');															
+															controlCategory._setSubSubCategories(value.name);
+													
+														});
+								      		
+											      	},
+											      	changeSubCategory: function(){											      
+														var subCategoryObj = document.getElementById("categorySubList");
+														var subCategory=$(subCategoryObj).val();
+														$(categorySubSubList).empty();
+														controlCategory._setSubSubCategories(subCategory);
+											      		
+											      	},
+											      	_selectSubCategory: function(category){
+											      		db.transaction(function (tx) {
+														   tx.executeSql('SELECT * FROM CATEGORY where type="N1" and supername="'+category+'"', [], function (tx, results) {
+														   	   console.log("sub categories"+results.rows);
+														   	   console.log("sub categories lenght"+results.rows.length);
+															   return results;														   
+															 },controlCategory.errorCB);
+														});																							      	
+											      	},
+											      	_selectSubSubCategory: function(subcategory){
+											      		db.transaction(function (tx) {
+														   tx.executeSql('SELECT * FROM CATEGORY where type="N2" and supername="'+subcategory+'"', [], function (tx, results) {
+														   		console.log("subsub categories"+results.rows);
+														   		console.log("subsub categories lenght"+results.rows.length);
+															 	return results;
+															 }, controlCategory.errorCB);
+														});												
+											      	},											    
+											      	_setSubSubCategories: function(name){
+											      		//get subsubcategories of subcategory
+											      		console.log("agafem subsubcategiries from"+name);
+															var resultsSubSubCats = controlCategory._selectSubSubCategory(name);
+															$.each(resultsSubSubCats, function(index, value) {
+																//Afegim nou registre a subcategories	
+																$(categorySubSubList).append('<option value="'+value.name+'" >'+value.name+'</option>');															
+															});
+														console.log("END: agafem subsubcategiries");
+											      	},
+											      	errorCB: function(tx, err) {
+												  		 console.log("Error creating client table SQL: "+err);
+													},		
+											 }     	      
+						
+						var videoControl ={
+							_init: function(){
+								this._self= this;
+							},
+							captureSuccess: function(mediaFiles) {
+						        var i, len;
+						        for (i = 0, len = mediaFiles.length; i < len; i += 1) {
+						            videoControl.uploadFile(mediaFiles[i]);
+						        }       
+						    },
+						    captureError: function(error) {
+						        var msg = 'Error during capture: ' + error.code;
+						        navigator.notification.alert(msg, null, 'Uh oh!');
+						    },
+						     captureVideo: function() {
+        						navigator.device.capture.captureVideo(videoControl.captureSuccess, videoControl.captureError, {limit: 1});
+    						},
+    						uploadFile: function(mediaFile) {
+						        var ft = new FileTransfer();
+						        var   path = mediaFile.fullPath;
+						        var    name = mediaFile.name;
+								alert(path);
+								alert(name);
+						        ft.upload(path,
+						            "http://localhost:9090/Spring/rest/service/userSrv/video",
+						            function(result) {
+						                console.log('Subida correcta');						               
+						            },
+						            function(error) {
+						                console.log('Error en la subida del fichero ' + path + ': ' + error.code);
+						            },
+						            { fileName: name });   
+						    }
+						}
+    
+						      	
+						document.addEventListener("deviceready", onDeviceReady, false);
+						function onDeviceReady() {
+						    	console.log("database creating");
+						        db = window.openDatabase("online", "1.0", "StorageCatalog", 200000);
+						        db.transaction(controlDB.populateClientDB, controlDB.errorCB, controlDB.successCB);
+						        controlUser._init();
+							    controlPage._init();
+							    controlDB._init();
+							    controlClient._init();
+						        controlUser.check();
+						        videoControl._init();	
+						        controlCategory._init();
+						}	   
+					</script>
+        </head>  
+        <body id="bdy" > 
+        
+	        <div data-role="page" id="logUser" >
+	        	<div data-role="header">
+					<h1>LOGIN</h1>
+				</div>
+	        	<div data-role="content" >    				
+		   				<input name="username" id="username" placeholder="Text input" value="" data-clear-btn="true" type="text">
+		   				<input name="password" id="password" placeholder="Text input" value="" data-clear-btn="true" type="password">
+		       	</div>			
+				<div data-role="footer">
+						<h4><p><a href="#" data-role="button" id="user" onclick="controlUser.logUser();"></a></p></h4><br>
+						<h4><p><span id="error.login" style="color: red;" ></span></p></h4>
+				</div>
+			</div> 
+			
+			<div data-role="page" id="menu" >
+		        	<div data-role="header">
+						<h1>Catalog</h1>
+					</div>
+		        	<div data-role="content" >
+						
+							<ul id="menuList" data-role="listview"  data-inset="true" data-filter="true">
+							  
+							</ul>
+						
+					</div>
+					<div data-role="footer">
+						<h4><p><a href="#" onclick="controlUser.logOut();">LogOut</a></p></h4>
+					</div>
+			</div>
+			
+	        <div data-role="page" id="clients" >
+		        	<div data-role="header">
+						<h1>Users</h1>
+					</div>
+		        	<div data-role="content" >
+						<ul id="clientsList" data-role="listview" data-inset="true" data-filter="true">
+					
+						</ul>
+			       		 
+					</div>
+					<div data-role="footer">
+						<h4><p><a href="#captur" id="capturFot">CAPTURA</a>&nbsp;<a href="#" onclick="controlPage.goToMenu()" id="menuFot">Menu</a>&nbsp;<a href="#insert" id="insertFot">Insert User</a> &nbsp;<a href="#" id="logOutFot" onclick="controlUser.logOut();">LogOut</a></p></h4>
+					</div>
+			</div>
+       
+			<div data-role="page" id="insert" >
+	        	<div data-role="header">
+					<h1 id="headerInsertUsers">Users</h1>
+				</div>
+	        	<div data-role="content" >
+	    			
+	    			<input name="firstname" id="firstname" placeholder="Text input" value="" data-clear-btn="true" type="text">
+	    			<input name="passNewUser" id="passNewUser" placeholder="Text input" value="" data-clear-btn="true" type="text">
+	    			<input name="telNewUser" id="telNewUser" placeholder="Tel" value="" data-clear-btn="true" type="text">
+		            <div data-role="fieldcontain">
+						<label for="select-choice-1" id="labelrole" class="select">Role:</label>
+						<select name="select-choice-1" id="select-choice-1">
+							<option value="standard"  data-placeholder="true" >...</option>
+							<option value="ROLE_ADMIN">ADMIN</option>
+							<option value="ROLE_CLIENT">CLIENT</option>							
+						</select>
+					</div>
+					<div data-role="fieldcontain">
+						<label for="select-choice-1" id ="labelidioma" class="select">Idioma:</label>
+						<select name="select-idioma-1" id="select-idioma-1">
+							<option value="standard"  data-placeholder="true" >...</option>
+							<option value="CA">CA</option>
+							<option value="ES">ES</option>							
+							<option value="EN">EN</option>
+						</select>
+					</div>
+		   				 <a href="#" id="buttonSaveClient" data-role="button" onclick="controlUser.insertUser();">Save</a>  	   				
+	 
+		            <div id="tweet" ></div>
+	       		
+		       	</div>			
+				<div data-role="footer">
+						<h4><p><a class="menuFotClients" href="#clients">List</a></p></h4>
+				</div>
+			</div>
+			
+			<div data-role="page" id="infoUser" >
+	        	<div data-role="header">
+					<h1 id="headerInfoUser" >Info User</h1>
+				</div>
+	        	<div data-role="content" >
+	    				
+		   				 <a href="#" data-role="button" id="userToDelete" onclick="controlUser.deleteUser();">Delete user</a>  
+		       	</div>			
+				<div data-role="footer">
+						<h4><p><a class="menuFotClients" href="#clients">List</a></p></h4>
+				</div>
+			</div>	
+			 <div data-role="page" id="captur" >
+		        	<div data-role="header">
+						<h1>VIDEO</h1>
+					</div>
+		        	<div data-role="content" >
+		    				
+			   				 <h1>Captura un video</h1>
+			       	</div>			
+					<div data-role="footer">
+							<h4><p><a href="#" data-role="button" id="user" onclick="videoControl.captureVideo();">CAPTURE</a></p></h4>
+					</div>
+			</div> 
+			<div data-role="page" id="category" >
+	        	<div data-role="header">
+					<h1 id="headerCategory">Category</h1>
+				</div>
+	        	<div data-role="content" >
+	    			
+	    		
+		            <div data-role="fieldcontain">
+						<label for="categoryList" id="labelCategories" class="select">Categories:</label>
+						<select name="categoryList" id="categoryList" onchange="controlCategory.changeCategory()">
+							<option value="standard"  data-placeholder="true" >...</option>										
+						</select>
+					</div>
+					<div data-role="fieldcontain">
+						<label for="categorySubList" id ="labelSubCategories" class="select">Sub Categories:</label>
+						<select name="categorySubList" id="categorySubList" onchange="controlCategory.changeSubCategory()" >
+							<option value="standard"  data-placeholder="true" >...</option>							
+						</select>
+					</div>
+					<div data-role="fieldcontain">
+						<label for="categorySubSubList" id ="labelSubSubCategories" class="select">SubSub Categories:</label>
+						<select name="categorySubSubList" id="categorySubSubList" onchange="">
+							<option value="standard"  data-placeholder="true" >...</option>							
+						</select>
+					</div>		   				  	   					 		        
+	       		
+		       	</div>			
+				<div data-role="footer">
+						<h4><p><a class="menuFotClients" href="#menu">List</a></p></h4>
+				</div>
+			</div>
+			
+				
+ 	 	</body> 
+ 	 	<script type="text/javascript" charset="utf-8">  
+ 	 			console.log("omplim params locale");
+				x$("#username").attr('placeholder',Translation.getText('6'));
+				x$("#password").attr('placeholder',Translation.getText('7'));
+				x$("#firstname").attr('placeholder',Translation.getText('6'));
+				x$("#passNewUser").attr('placeholder',Translation.getText('7'));
+				x$("#telNewUser").attr('placeholder',Translation.getText('tel'));
+				x$("#user").html(Translation.getText('8'));	
+				document.getElementById("labelidioma").innerHTML=Translation.getText('labelidioma')+":";
+				document.getElementById("labelrole").innerHTML=Translation.getText('labelrole')+":";
+				document.getElementById("headerInsertUsers").innerHTML=Translation.getText('headerInsertUsers')+":";
+				document.getElementById("headerInfoUser").innerHTML=Translation.getText('headerInfoUser')+":";
+				document.getElementById("menuFot").innerHTML=Translation.getText('menuFot');
+				document.getElementById("insertFot").innerHTML=Translation.getText('insertFot');
+				document.getElementById("logOutFot").innerHTML=Translation.getText('logOutFot');
+				document.getElementById("userToDelete").innerHTML=Translation.getText('userToDelete');
+				x$(".menuFotClients").html(Translation.getText('4'));	
+				document.getElementById("buttonSaveClient").innerHTML=Translation.getText('buttonSaveClient');		
+				document.getElementById("headerCategory").innerHTML=Translation.getText('category');
+				document.getElementById("labelSubSubCategories").innerHTML=Translation.getText('labelSubSubCategories')+":";
+				document.getElementById("labelSubCategories").innerHTML=Translation.getText('labelSubCategories')+":";
+				document.getElementById("labelCategories").innerHTML=Translation.getText('labelCategories')+":";
+				
+				
+		
+		</script>
+    </html>  

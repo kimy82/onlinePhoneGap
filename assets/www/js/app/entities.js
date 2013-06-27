@@ -1,8 +1,12 @@
-		  function Client(name) {
+						function Client(name,role) {
 								var _self=this;
 								this.name= name;
+								this.role=role;
 								this.getName = function(){
 									return _self.name;
+								}
+								this.getRole = function(){
+									return _self.role;
 								}
 							}
 							
@@ -36,5 +40,38 @@
 								}								
 								this.getId = function(){
 									return _self.id;
+								}
+							}
+							
+							 function Notificacions(notif,id,user1,user2,date,sent,recieved) {
+								var _self=this;
+								this.notif= notif;						
+								this.id=id;
+								this.user1=user1;
+								this.user2=user2;
+								this.date=date;
+								this.sent=sent
+								this.recieved=recieved;
+								
+								this.getNotif = function(){
+									return _self.notif;
+								}								
+								this.getId = function(){
+									return _self.id;
+								}
+								this.getUser1 = function(){
+									return _self.user1;
+								}
+								this.getUser2 = function(){
+									return _self.user2;
+								}
+								this.getDate = function(){
+									return _self.date;
+								}
+								this.getSent = function(){
+									return _self.sent;
+								}
+								this.getRecieved = function(){
+									return _self.recieved;
 								}
 							}

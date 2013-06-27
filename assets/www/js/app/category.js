@@ -95,9 +95,10 @@
 												  		 console.log("Error creating client table SQL: "+err);
 													},
 													createCat: function(){
+														
 													 	var nameCat = document.getElementById("newCat").value;													 	
 													 	var companyId = window.localStorage.getItem("user.companyId");
-														var url = "http://10.0.2.2:9090/Spring/rest/service/userSrv/createCategory?companyId="+companyId+"&name="+nameCat;
+														var url = "http://"+contextURL+"/Spring/rest/service/userSrv/createCategory?companyId="+companyId+"&name="+nameCat;
 													    	
 															    $.ajax({
 															       			url: url,
@@ -106,7 +107,7 @@
 																			dataType: 'json',
 																			cache : false,													         
 																			success: function ( jsonResponse ) {
-																					alert(jsonResponse.ok+"    ::   "+jsonResponse.id);
+																					//alert(jsonResponse.ok+"    ::   "+jsonResponse.id);
 																				if(jsonResponse.ok=='ok'){
 																						
 																					 var categoryList= document.getElementById("categoryList");
@@ -124,7 +125,7 @@
 													
 														var nameSubCat = document.getElementById("newSubCat").value;														
 													 	var companyId = window.localStorage.getItem("user.companyId");
-														var url = "http://10.0.2.2:9090/Spring/rest/service/userSrv/createSubCategory?companyId="+companyId+"&name="+nameSubCat+"&namesuper="+nameCat;
+														var url = "http://"+contextURL+"/Spring/rest/service/userSrv/createSubCategory?companyId="+companyId+"&name="+nameSubCat+"&namesuper="+nameCat;
 													    	
 															    $.ajax({
 															       			url: url,
@@ -133,7 +134,7 @@
 																			dataType: 'json',
 																			cache : false,													         
 																			success: function ( jsonResponse ) {
-																					alert(jsonResponse.ok+"    ::   "+jsonResponse.id);
+																					//alert(jsonResponse.ok+"    ::   "+jsonResponse.id);
 																					if(jsonResponse.ok=='ok'){
 																					 var categorySubList= document.getElementById("categorySubList");
 																					 $(categorySubList).append('<option value="'+jsonResponse.id+'" >'+nameSubCat+'</option>');
@@ -150,7 +151,7 @@
 														var nameSubCat=$(categorySubObj).val();
 														var nameSubSubCat = document.getElementById("newSubSubCat").value;														
 														var companyId = window.localStorage.getItem("user.companyId");
-														var url = "http://10.0.2.2:9090/Spring/rest/service/userSrv/createSubSubCategory?companyId="+companyId+"&name="+nameSubSubCat+"&namesuper="+nameSubCat;
+														var url = "http://"+contextURL+"/Spring/rest/service/userSrv/createSubSubCategory?companyId="+companyId+"&name="+nameSubSubCat+"&namesuper="+nameSubCat;
 													    	
 															    $.ajax({
 															       			url: url,
@@ -159,7 +160,7 @@
 																			dataType: 'json',
 																			cache : false,													         
 																			success: function ( jsonResponse ) {
-																					alert(jsonResponse.ok+"    ::   "+jsonResponse.id);
+																					//alert(jsonResponse.ok+"    ::   "+jsonResponse.id);
 																					if(jsonResponse.ok=='ok'){
 																					
 																					 var categorySubSubList= document.getElementById("categorySubSubList");
@@ -175,7 +176,7 @@
 														var categorySubSubObj = document.getElementById("categorySubSubList");
 														var subsubcategory=$(categorySubSubObj).val();
 													
-														var url = "http://10.0.2.2:9090/Spring/rest/service/userSrv/deleteSubSubCategory?idSubSubCategory="+subsubcategory;
+														var url = "http://"+contextURL+"/Spring/rest/service/userSrv/deleteSubSubCategory?idSubSubCategory="+subsubcategory;
 													    	
 															    $.ajax({
 															       			url: url,
@@ -189,7 +190,7 @@
 																						controlDB.categoryArray=new Array();
 													 								 	 controlDB.categoryArray[0]=new Category("","N2","",subsubcategory);
 													 								 	 db.transaction(controlDB.queryDeleteCategory, controlDB.errorCB);
-													 								 	 alert("cat del::"+subsubcategory);
+													 								 	// alert("cat del::"+subsubcategory);
 													 								 	 $("#categorySubSubList option[value="+subsubcategory+"]").remove();
 													 								 	   var el = $('#categorySubSubList');
 
@@ -211,7 +212,7 @@
 														var categorySubObj = document.getElementById("categorySubList");
 														var subcategory=$(categorySubObj).val();
 													
-														var url = "http://10.0.2.2:9090/Spring/rest/service/userSrv/deleteSubCategory?idSubCategory="+subcategory;
+														var url = "http://"+contextURL+"/Spring/rest/service/userSrv/deleteSubCategory?idSubCategory="+subcategory;
 													    	
 															    $.ajax({
 															       			url: url,
@@ -225,7 +226,7 @@
 																						controlDB.categoryArray=new Array();
 													 								 	 controlDB.categoryArray[0]=new Category("","N1","",subcategory);
 													 								 	 db.transaction(controlDB.queryDeleteCategory, controlDB.errorCB);
-													 								 	 alert("cat del::"+subcategory);
+													 								 	// alert("cat del::"+subcategory);
 													 								 	 $("#categorySubList option[value="+subcategory+"]").remove();
 													 								 	 var el = $('#categorySubList');
 																						// Select the relevant option, de-select any others
@@ -265,7 +266,7 @@
 														var categoryObj = document.getElementById("categoryList");
 														var category=$(categoryObj).val();
 													
-														var url = "http://10.0.2.2:9090/Spring/rest/service/userSrv/deleteCategory?idCategory="+category;
+														var url = "http://"+contextURL+"/Spring/rest/service/userSrv/deleteCategory?idCategory="+category;
 													    	
 															    $.ajax({
 															       			url: url,
@@ -279,7 +280,7 @@
 																						 controlDB.categoryArray=new Array();
 													 								 	 controlDB.categoryArray[0]=new Category("","N0","",category);
 													 								 	 db.transaction(controlDB.queryDeleteCategory, controlDB.errorCB);
-													 								 	 alert("cat del::"+category);
+													 								 	// alert("cat del::"+category);
 																					  	 $("#categoryList option[value="+category+"]").remove();
 																					  	 var el = $('#categoryList');
 
@@ -295,7 +296,7 @@
 																						//per el SUB
 																						controlDB.categoryArray=new Array();																																											
 																					    $("#categorySubList option").each(function(i){
-																					        alert($(this).text() + " : " + $(this).val());
+																					       // alert($(this).text() + " : " + $(this).val());
 																					        var id = $(this).val();
 																					        if(id!='standard'){
 																						        $("#categorySubList option[value="+id+"]").remove();
@@ -316,7 +317,7 @@
 																					     //per el SUBSUB
 																						controlDB.categoryArray=new Array();																																											
 																					    $("#categorySubSubList option").each(function(i){
-																					        alert($(this).text() + " : " + $(this).val());
+																					       // alert($(this).text() + " : " + $(this).val());
 																					        var id = $(this).val();
 																					        if(id!='standard'){
 																						        $("#categorySubSubList option[value="+id+"]").remove();

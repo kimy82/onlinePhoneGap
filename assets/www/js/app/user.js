@@ -32,11 +32,11 @@
 															navigator.notification.alert(Translation.getText(10));  
 															return;
 														}														
-											      		var url = "http://10.0.2.2:9090/Spring/rest/dao/login"; 
+											      		var url = "http://"+contextURL+"/Spring/rest/dao/login"; 
 											        
-																//10.0.2.2		        	                  						       
+																        	                  						       
 						       							$.ajax({
-						       								   url: "http://10.0.2.2:9090/Spring/rest/service/userSrv/login?user="+username+"&pass="+login,
+						       								   url: "http://"+contextURL+"/Spring/rest/service/userSrv/login?user="+username+"&pass="+login,
 													           type: "GET",
 													           dataType: 'json',
 													           cache : false,													         
@@ -85,7 +85,7 @@
 														}catch(error){
 														console.log("Error getting client"+error);
 														}
-												        var url = "http://10.0.2.2:9090/Spring/rest/service/userSrv/delete?user="+user;
+												        var url = "http://"+contextURL+"/Spring/rest/service/userSrv/delete?user="+user;
 												        
 												        	$.ajax({
 												       			url: url,
@@ -119,7 +119,7 @@
 												        var pass = document.getElementById("passNewUser").value;
 												        
 												        
-												        var url = "http://10.0.2.2:9090/Spring/rest/service/userSrv/insert?user="+user+"&userinsert="+userToInsert+"&pass="+pass+"&role="+role+"&tel="+tel+"&idioma="+idioma;
+												        var url = "http://"+contextURL+"/Spring/rest/service/userSrv/insert?user="+user+"&userinsert="+userToInsert+"&pass="+pass+"&role="+role+"&tel="+tel+"&idioma="+idioma;
 												        	$.ajax({
 												       			url: url,
 														        type: "GET",
