@@ -43,6 +43,29 @@
 								}
 							}
 							
+							 function Product(name,html,id,company) {
+								var _self=this;
+								this.name= name;						
+								this.id=id;
+								this.html=html;
+								this.company= company;
+								
+								this.getName = function(){
+									return _self.name;
+								}								
+								this.getId = function(){
+									return _self.id;
+								}
+								this.getHtml = function(){
+									return _self.html;
+								}
+								this.getCompany = function(){
+									return _self.company;
+								}
+							}
+							
+							
+							
 							 function Notificacions(notif,id,user1,user2,date,sent,recieved) {
 								var _self=this;
 								this.notif= notif;						

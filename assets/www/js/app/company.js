@@ -4,7 +4,7 @@
 												this.id='companyImg1';
 											},
 											changeCompany: function(){
-												var companyObj = document.getElementById("categoryList");
+												var companyObj = document.getElementById("companyList");
 												var companyId=$(companyObj).val();
 												var companyName= $(companyObj).text();
 												
@@ -64,15 +64,62 @@
 																					if(jsonResponse.ok=='ok'){
 																						 var companyList= document.getElementById("companyList");
 																						 $(companyList).append('<option value="'+jsonResponse.id+'" >'+name+'</option>');
+																						 var el = $('#companyList');
+																						 el.val(jsonResponse.id).attr('selected', true).siblings('option').removeAttr('selected');
+																						 el.selectmenu();																						
+																						 el.selectmenu("refresh", true);
 																						 controlDB.companyArray=new Array();
 														 								 controlDB.companyArray[0]=new Company(name,jsonResponse.id);
 														 								 db.transaction(controlDB.queryInsertCompanies, controlDB.errorCB);
 																						 $('#addFotoCompany1').button('enable');		
-																						 $('#addFotoCompany2').button('enable');																							 
+																						 $('#addFotoCompany2').button('enable');
+																						 controlCompany.changeCompany();
 																						 alert("COMPANY CREATED");	
 																					  	 
 																					}																																																					
 																				}
+																	});	
+											},
+											resave: function(){
+												var htmlCompany = document.getElementById('previewCompany').innerHTML;
+												var companyId = window.localStorage.getItem("user.companyId");
+												
+												alert(htmlCompany);
+													var url = "http://"+contextURL+"/Spring/rest/service/userSrv/resaveCompany?htmlCompany="+htmlCompany+"&companyId="+companyId;
+													    	
+															    $.ajax({
+															       			url: url,
+																	        type: "GET",
+																			async: true,
+																			dataType: 'json',
+																			cache : false,													         
+																			success: function ( jsonResponse ) {
+																					
+																					if(jsonResponse.ok=='ok'){																						 
+																						 alert("COMPANY SAVED");																						  	 
+																					}																																																					
+																				}
+																	});	
+											},
+											getCompanyHTML: function(){
+													var companyId = window.localStorage.getItem("user.companyId");
+												
+												   
+													var url = "http://"+contextURL+"/Spring/rest/service/userSrv/htmlCompany?companyId="+companyId;
+													    	
+															    $.ajax({
+															       			url: url,
+																	        type: "GET",
+																			async: true,
+																			dataType: 'json',
+																			cache : false,													         
+																			success: function ( jsonResponse ) {
+																					
+																					if(jsonResponse.ok=='ok'){	
+																						//alert("posant html"+jsonResponse.html);																					
+																						 document.getElementById('htmlCompany').innerHTML=jsonResponse.html;																				  	 
+																					}																																																					
+																			}
 																	});	
 											},
 											captureImage: function(id){
@@ -101,7 +148,7 @@
 												document.getElementById(controlCompany.id).src=path;
 												
 												ft.upload(path,
-													"http://"+contextURL+"/Spring/rest/service/userSrv/uploadFoto?companyId="+companyId,
+													"http://"+contextURL+"/Spring/rest/service/userSrv/uploadFoto?companyId="+companyId+"&id="+controlCompany.id,
 													function(result) {
 														console.log('Upload success: ' + result.responseCode);
 														console.log(result.bytesSent + ' bytes sent');

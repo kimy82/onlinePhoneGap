@@ -20,7 +20,7 @@
         android:hardwareAccelerated="true"
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:windowSoftInputMode="adjustPan"
-      package="com.android.online" android:versionName="1.0" android:versionCode="1" android:hardwareAccelerated="true" >
+      package="com.android.online" android:versionName="1.0" android:versionCode="1"  android:hardwareAccelerated="true" >
     <supports-screens
         android:largeScreens="true"
         android:normalScreens="true"
@@ -50,7 +50,7 @@
     
 <!--  android:hardwareAccelerated="true" -->
     <application android:icon="@drawable/icon" android:label="@string/app_name"       
-        android:debuggable="true" android:hardwareAccelerated="true" >
+        android:debuggable="true"  android:hardwareAccelerated="true" >
         <!--  android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale" -->
         <activity android:name="onlineBotAnd" android:label="@string/app_name"
                 android:theme="@android:style/Theme.Black.NoTitleBar"

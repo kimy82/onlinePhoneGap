@@ -32,6 +32,18 @@
 													$.mobile.changePage("#enviaNotif", { transition: "slideup"});	
 						      						$(document).bind('pagechange',function(){controlPage._createNotifSearchUser(user);});
 												},
+												goToCataleg: function(){
+						      						$.mobile.changePage("#cataleg", { transition: "slideup"});	
+													$(document).bind('pagechange',function(){controlPage._getCatalegHTML();});
+						      					},
+												goToCompanyInfo: function(){
+						      						$.mobile.changePage("#companyInfo", { transition: "slideup"});	
+													$(document).bind('pagechange',function(){controlPage._getCompanyHTML();});
+						      					},
+												goToCreaProduct: function(){
+						      						$.mobile.changePage("#creaProduct", { transition: "slideup"});	
+													$(document).bind('pagechange',function(){controlDB.checkCategoryFilled('categoryProductList','categoryProductSubList','categoryProductSubSubList');});
+						      					},												
 						      					_createSelectCompanies: function(){
 						      						controlDB.fillCompanies();
 													$(document).unbind('pagechange');
@@ -47,6 +59,14 @@
 												},
 												_createNotifSearchUser: function(){
 													controlDB.fillNotificacionsSearchUser();
+													$(document).unbind('pagechange');
+												},
+												_getCompanyHTML: function(){
+													controlCompany.getCompanyHTML();
+													$(document).unbind('pagechange');
+												},
+												_getCatalegHTML: function(){
+													controlProduct.getCatalegHTML();
 													$(document).unbind('pagechange');
 												},
 												createMenuPrincipal: function(){
@@ -77,9 +97,9 @@
 													console.log("menu inizilization");
 													var list = document.getElementById("menuList");
 													$(list).empty();	
-													$(list).append('<li><a href="#cataleg">'+Translation.getText('1')+'</a></li>');		 	
-													$(list).append('<li><a href="#" onclick="controlPage.goToNotificacions()">'+Translation.getText('2')+'</a></li>');
-													$(list).append('<li><a href="#companyInfo">'+Translation.getText('3')+'</a></li>');													
+													$(list).append('<li  ><a href="#" onclick="controlPage.goToCataleg()">'+Translation.getText('1')+'</a></li>');		 	
+													$(list).append('<li  ><a href="#"  onclick="controlPage.goToNotificacions()">'+Translation.getText('2')+'</a></li>');
+													$(list).append('<li  ><a href="#"  onclick="controlPage.goToCompanyInfo()" >'+Translation.getText('3')+'</a></li>');													
 													$(list).listview('refresh');
 													console.log("menu created");
 												},
@@ -87,12 +107,12 @@
 													console.log("menu inizilization");
 													var list = document.getElementById("menuList");		
 													$(list).empty();
-													$(list).append('<li><a href="#cataleg">'+Translation.getText('1')+'</a></li>');		 	
-													$(list).append('<li><a href="#" onclick="controlPage.goToNotificacions()">'+Translation.getText('2')+'</a></li>');
-													$(list).append('<li><a  href="#" onclick="controlPage.goToCategory()">'+Translation.getText('category')+'</a></li>');
-													$(list).append('<li><a href="#companyInfo">'+Translation.getText('3')+'</a></li>');
-													$(list).append('<li><a href="#" onclick="controlPage.goToClients()">'+Translation.getText('4')+'</a></li>');
-													$(list).append('<li><a href="#createProduct">'+Translation.getText('5')+'</a></li>');
+													$(list).append('<li  ><a href="#"  onclick="controlPage.goToCataleg()">'+Translation.getText('1')+'</a></li>');		 	
+													$(list).append('<li ><a href="#"  onclick="controlPage.goToNotificacions()">'+Translation.getText('2')+'</a></li>');
+													$(list).append('<li  ><a  href="#"  onclick="controlPage.goToCategory()">'+Translation.getText('category')+'</a></li>');
+													$(list).append('<li  ><a href="#"  onclick="controlPage.goToCompanyInfo()">'+Translation.getText('3')+'</a></li>');
+													$(list).append('<li ><a href="#" onclick="controlPage.goToClients()">'+Translation.getText('4')+'</a></li>');
+													$(list).append('<li  ><a href="#"  onclick="controlPage.goToCreaProduct()">'+Translation.getText('5')+'</a></li>');
 													$(list).listview('refresh');
 													console.log("menu created");													
 													
@@ -102,13 +122,13 @@
 													try{												
 														var list = document.getElementById("menuList");		
 														$(list).empty();												
-														$(list).append('<li><a href="#cataleg">'+Translation.getText("1")+'</a></li>');		 	
-														$(list).append('<li><a href="#" onclick="controlPage.goToNotificacions()">'+Translation.getText("2")+'</a></li>');
-														$(list).append('<li><a href="#" onclick="controlPage.goToCategory()">'+Translation.getText('category')+'</a></li>');
-														$(list).append('<li><a href="#companyInfo">'+Translation.getText("3")+'</a></li>');
-														$(list).append('<li><a href="#" onclick="controlPage.goToClients()">'+Translation.getText("4")+'</a></li>');
-														$(list).append('<li><a href="#createProduct">'+Translation.getText("5")+'</a></li>');	
-														$(list).append('<li><a href="#"  onclick="controlPage.goToChangeCompany()">'+Translation.getText("changeCompany")+'</a></li>'); 	
+														$(list).append('<li  ><a href="#" onclick="controlPage.goToCataleg()" >'+Translation.getText("1")+'</a></li>');		 	
+														$(list).append('<li  ><a href="#" onclick="controlPage.goToNotificacions()">'+Translation.getText("2")+'</a></li>');
+														$(list).append('<li  ><a href="#"  onclick="controlPage.goToCategory()">'+Translation.getText('category')+'</a></li>');
+														$(list).append('<li  ><a href="#"  onclick="controlPage.goToCompanyInfo()">'+Translation.getText("3")+'</a></li>');
+														$(list).append('<li ><a href="#"  onclick="controlPage.goToClients()">'+Translation.getText("4")+'</a></li>');
+														$(list).append('<li  ><a href="#"  onclick="controlPage.goToCreaProduct()" >'+Translation.getText("5")+'</a></li>');	
+														$(list).append('<li ><a href="#" onclick="controlPage.goToChangeCompany()">'+Translation.getText("changeCompany")+'</a></li>'); 	
 														$(list).listview('refresh');
 														console.log("menu created");
 														

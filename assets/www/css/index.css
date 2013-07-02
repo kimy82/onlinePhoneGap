@@ -236,6 +236,30 @@ div.examplePDFCompany {
 				column-rule: 1px solid #bbb;
 				column-gap: 2em;
 			}
+			
+			#columns-no-example-p1 {
+				-webkit-column-count: 2;
+				-webkit-column-rule: 1px solid #bbb;
+				-webkit-column-gap: 2em;
+				-moz-column-count: 2;
+				-moz-column-rule: 1px solid #bbb;
+				-moz-column-gap: 2em;
+				column-count: 2;
+				column-rule: 1px solid #bbb;
+				column-gap: 2em;
+			}
+			
+			#columns-no-example-p2 {
+				-webkit-column-count: 2;
+				-webkit-column-rule: 1px solid #bbb;
+				-webkit-column-gap: 2em;
+				-moz-column-count: 2;
+				-moz-column-rule: 1px solid #bbb;
+				-moz-column-gap: 2em;
+				column-count: 2;
+				column-rule: 1px solid #bbb;
+				column-gap: 2em;
+			}
 			div.example {
 				display: block;
 				padding: 10px 20px;
@@ -257,3 +281,100 @@ div.examplePDFCompany {
 				-moz-box-flex: 1;
 				text-align: center;
 			}
+
+			   .ui-input-text{
+               
+                width: 228px!important;
+                 background: none!important;
+
+            }
+            div.ui-input-has-clear {
+                padding: 0 0px 0 0em!important;
+            }
+            #logUser{
+                background-image: url(../themes/images/bg.jpg)!important;
+                background:none;
+            }
+           
+
+#content_total{
+height: 302px;
+width: 323px;
+position: absolute;
+left:50%;
+top:50%;
+margin-top:-150px;
+margin-left:-161px;
+
+}
+
+#content{
+height: 132px;
+width: 260px;
+padding: 30px;
+background: rgba(255, 255, 255, 0.30);
+border-left:3px solid yellow;
+}
+.margins{
+margin-bottom:37px;
+margin-left:3px;
+}
+.marginout{
+
+margin-left:3px;
+}
+::-webkit-input-placeholder { /* WebKit browsers */
+    color: #333;
+    text-shadow: none;
+    padding-top:0px;
+    font-family:helvetica;
+    font-weight: 100;
+    font-size:13px;
+    
+}
+#username{
+padding:11px;
+ background: rgba(255, 255, 255, 0.30)!important;
+ border-radius: 0px;
+}
+#password{
+padding:11px;
+ background: rgba(255, 255, 255, 0.30)!important;
+ border-radius: 0px;
+}
+.text_tit {
+font-family: Helvetica;
+font-weight: bold;
+font-size: 20px;
+margin-left: 35px;
+margin-bottom: 20px;
+color: white;
+}
+.supsup{
+float:right;
+}
+
+.sup{
+margin-top:12px;
+ background: rgba(255, 255, 255, 0.30)!important;
+ float: left;
+width: 322px;
+}
+
+.sup .ui-btn-inner {
+font-size: 16px;
+padding: 10px!important;
+display: block;
+position: relative;
+text-overflow: ellipsis;
+overflow: hidden;
+white-space: nowrap;
+zoom: 1;
+ background: rgba(255, 255, 255, 0.30)!important;
+border-left:3px solid yellow;
+}
+
+.sup .ui-btn{
+margin:0px!important;
+}
+			

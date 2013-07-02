@@ -22,6 +22,7 @@
 			  <script type="text/javascript" src="js/app/company.js"></script>
 			  <script type="text/javascript" src="js/app/dataBase.js"></script>
 			  <script type="text/javascript" src="js/app/entities.js"></script>
+			  <script type="text/javascript" src="js/app/product.js"></script>
 			  <script type="text/javascript" src="js/app/page.js"></script>
 			  <script type="text/javascript" src="js/app/user.js"></script>
 			  <script type="text/javascript" src="js/app/notif.js"></script>
@@ -56,113 +57,347 @@
 						        controlCategory._init();
 						        controlCompany._init();
 						        controlNotif._init();
+								controlProduct._init();
 						}	   
+						
+						$(document).on('pagebeforeshow', '[data-role="page"]', function(){          
+
+							// if the page hasn't got yet a menu panel, append a new menu
+							//alert($.mobile.activePage.attr("id"));
+							if($.mobile.activePage.attr("id")!="logUser" && $.mobile.activePage.attr("id")!="menu"){
+					
+							       
+									$('<div>').attr({'data-role':'panel',"class":"menu","data-theme":"a"}).appendTo($(this));
+	
+									// copy the contents of the panel defined before    
+									$.mobile.activePage.find('.menu').html($("#left-panel").html()).panel();    
+							//	alert("menu"+$.mobile.activePage.find('.menu').html());
+								
+								
+							}
+							// if click the .showMenu button, open the menu
+							$(document).on('click', '.showMenu', function(){    																
+								//alert("refresh open");
+								$.mobile.activePage.find('.menu').panel("open");       
+							});   
+						});   
 					</script>
         </head>  
-        <body id="bdy" > 
+        <body id="bdy" >         							
+					<div data-theme="a" data-role="page" id="logUser" >
+	        	
+		                <div id="content_total">
+		                    <div class="text_tit">
+		                        MYCATALOG
+		                            </div>
+			        	<div data-role="content" id="content">    	
+			        			<div class="margins">
+				   					<input name="username" id="username" placeholder="Text input" value="" data-clear-btn="true" type="text">
+				   				</div>
+		                
+				   				<div class="marginout">			
+				   					<input name="password" id="password" placeholder="Text input" value="" data-clear-btn="true" type="password">
+				   				</div>
+				       	</div>
+		                        <div class="sup">
+		                            <span id="error.login" style="color: red;" ></span>
+		                            <div class="supsup">
+		                            <a href="#" data-role="button" id="user" onclick="controlUser.logUser();"></a>
+		                           
+		                                </div>
+		                        </div>
+		                </div>
+		                 
+		
+					</div> 
+					
+					<div data-role="page" id="menu" data-theme="b">
+					   <div data-role="content">
+							
+						   	<a href="#left-panel" data-icon="bars" data-iconpos="notext" data-shadow="false" data-iconshadow="false">Menu</a>
+						   
+						   <p><a href="#right-panel" data-role="button" data-theme="b" data-inline="true" data-mini="true" data-shadow="false">Share</a></p>
+						  
+
+						</div>                                                                
+         
+						<div data-role="panel" id="left-panel" data-theme="a">
+							<ul data-role="listview" data-theme="b">
+								<li data-icon="delete"><a href="#" data-rel="close">Close</a></li>
+								<li data-role="list-divider">Menu</li>							
+							</ul>
+							
+							<ul id="menuList" data-theme="b" data-role="listview" >
+								
+								
+							</ul>      
+						</div><!-- /panel -->
+                
+						<div data-role="panel" id="right-panel" data-display="overlay" data-position="right" data-theme="c">
+						   admin?
+						</div><!-- /panel -->
+					</div>
+					
+					 <div data-role="page" id="clients" >
+									<div data-role="header">
+										<h1>Users</h1>
+									</div>
+									<div data-role="content" >
+									<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+										<a href="#" class="showMenu" data-icon="bars" data-iconpos="notext" data-shadow="false" data-iconshadow="false">Menu</a>
+									</div>
+									
+										<ul id="clientsList" data-role="listview" data-inset="true" data-filter="true">
+									
+										</ul>
+										 
+									</div>
+									<div data-role="footer">
+										<h4>						
+										<a href="#" data-role="button" onclick="controlPage.goToMenu()" id="menuFot">Menu</a>
+										<a href="#insert" data-role="button" id="insertFot">Insert User</a> 
+										<a href="#" data-role="button" id="logOutFot" onclick="controlUser.logOut();">LogOut</a>
+										</h4>
+									</div>
+					</div>
         	
-        	 <div data-role="page" id="logUser" >
-	        	<div data-role="header">
-					<h1>LOGIN</h1>
-				</div>
-	        	<div data-role="content" >    	
-	        			<div style="width:30%; margin-left: 35%;" >			
-		   					<input name="username" id="username" placeholder="Text input" value="" data-clear-btn="true" type="text">
-		   				</div>
-		   				<div style="width:30%; margin-left: 35%;" >		
-		   					<input name="password" id="password" placeholder="Text input" value="" data-clear-btn="true" type="password">
-		   				</div>
-		       	</div>			
-				<div data-role="footer">
-						<h4><p><a href="#" data-role="button" id="user" onclick="controlUser.logUser();"></a></p></h4><br>
-						<h4><p><span id="error.login" style="color: red;" ></span></p></h4>
-				</div>
-			</div> 
-			
-			
-        	<div data-role="page" id="changeCompany" >
-	        	<div data-role="header">
-					<h1 id="headerChangeCompany">Change company</h1>
-				</div>
-	        	<div data-role="content" >
-	    			
-	    			<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
-	    				<div style="float:left;width:89%" >	
-				            <div data-role="fieldcontain">
-								<label for="companyList" id="labelCompany" class="select">Companies:</label>
-								<select name="companyList" id="companyList" onchange="controlCompany.changeCompany()">
-																		
-								</select>
+		        	<div data-role="page" id="changeCompany" >
+			        	<div data-role="header">
+							<h1 id="headerChangeCompany">Change company</h1>
+						</div>
+			        	<div data-role="content" >
+			    			<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+										<a href="#" class="showMenu" data-icon="bars" data-iconpos="notext" data-shadow="false" data-iconshadow="false">Menu</a>
 							</div>
-						</div>
-						<div style="float:left;width:10%; margin-left:1%;" >
-							<a href="#" data-role="button"  onclick="controlCompany.deleteCompany()" >BORRAR</a>
+			    			<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+			    				<div style="float:left;width:89%" >	
+						            <div data-role="fieldcontain">
+										<label for="companyList" id="labelCompany" class="select">Companies:</label>
+										<select name="companyList" id="companyList" onchange="controlCompany.changeCompany()">
+																				
+										</select>
+									</div>
+								</div>
+								<div style="float:left;width:10%; margin-left:1%;" >
+									<a href="#" data-role="button"  onclick="controlCompany.deleteCompany()" >BORRAR</a>
+								</div>
+							</div>
+							<div style="width:90%; margin-left: 5%; margin-right: 5%;  overflow: hidden;" >
+			    				<div style="float:left;width:89%" >						
+									<input name="newCompany" id="newCompany" ng-model="companyName"  placeholder="Text input" value="" data-clear-btn="true" type="text">
+								</div>
+								<div style="float:left;width:10%; margin-left:1%;" >
+									<button onclick="controlCompany.createCompany()" >CREAR</button>
+								</div>
+							</div>
+							<div style="width:90%; margin-left: 5%; margin-right: 5%; margin-bottom:20px; overflow: hidden;" >
+			    				<div style="float:left;width:50%" >	
+									<input name="descCompany1" id="descCompany1" ng-model="companyDesc1"  placeholder="Text input" value="" data-clear-btn="true" type="text">
+								</div>
+								<div style="float:left;width:45%; margin-left: 5%;  margin-bottom:20px;" >	
+									<div style="width:75%;" >
+										<button id="addFotoCompany1" disabled="disabled" onclick="controlCompany.captureImage('companyImg1');">Capture Image</button>
+									</div>
+									<div style="width:25%;" >
+										<input name="resize1" id="resize1"  placeholder="width px" value="" data-clear-btn="true" type="text" onblur="resizeIMG('companyImg1',this)">
+									</div>
+								</div>
+								
+							</div>
+							<div style="width:90%; margin-left: 5%; margin-right: 5%; margin-bottom:20px; overflow: hidden;" >
+			    				<div style="float:left;width:50%" >	
+									<input name="descCompany2" id="descCompany2" ng-model="companyDesc2"  placeholder="Text input" value="" data-clear-btn="true" type="text">
+								</div>
+								<div style="float:left;width:45%; margin-left: 5%;  margin-bottom:20px;" >	
+									<div style="width:75%;" >
+										<button id="addFotoCompany2" disabled="disabled" onclick="controlCompany.captureImage('companyImg2');">Capture Image</button>
+									</div>
+									<div style="width:25%;" >
+										<input name="resize2" id="resize2"  placeholder="width px" value="" data-clear-btn="true" type="text" onblur="resizeIMG('companyImg2',this)">
+									</div>
+								</div>
+							</div>
+							
+							<div class="examplePDFCompany">
+								<div style="width:90%; margin-left: 5%; margin-right: 5%; margin-bottom:20px; overflow: hidden;" >
+			    					<div style="float:left;width:40%" >	
+										<input type="range" min="1" max="4" value="2" id="range1" onchange="changeColumnNoSlider1(event)"  />
+									</div>	
+									<div style="float:left;width:40%; margin-left:10%" >	
+										<input type="range" min="1" max="4" value="2" id="range2" onchange="changeColumnNoSlider2(event)"  />
+									</div>							
+								</div>					
+							</div>
+							<div style="width:90%; margin-left: 5%; margin-right: 5%; margin-bottom:20px; overflow: hidden;" >
+								<div style="float:left;width:40%" >	
+									<h1>PREVIEW</h1>
+								</div>
+								<div style="float:left;width:40%" >	
+									<button id="resave"  onclick="controlCompany.resave();">UPDATE</button>
+								</div>
+							</div>
+							<br>
+							<div id="previewCompany" class="examplePDFCompany">
+								<h1>{{companyName}}</h1>
+								<br>
+							
+										<div id="columns-no-example1" class="example" style="-webkit-column-count: 3;">{{companyDesc1}}
+											<img src="" width="200px" id="companyImg1" >
+										</div>    
+										<div id="columns-no-example2" class="example" style="-webkit-column-count: 3;">{{companyDesc2}}
+											<img src="" width="200px" id="companyImg2" >
+										</div>     																
+							</div>
+							
+							
+				       	</div>			
+						<div data-role="footer">
+								<div style="width:20%; margin-left: 40%; margin-right: 40%; overflow: hidden;" >
+									<h4><p><a class="menuFot" data-role="button" href="#" onclick="controlPage.goToMenu()" >List</a></p></h4>
+								</div>
 						</div>
 					</div>
-					<div style="width:90%; margin-left: 5%; margin-right: 5%;  overflow: hidden;" >
-	    				<div style="float:left;width:89%" >						
-							<input name="newCompany" id="newCompany" ng-model="companyName"  placeholder="Text input" value="" data-clear-btn="true" type="text">
+        	
+        
+        
+        
+         	<div data-role="page" id="creaProduct" >
+			        	<div data-role="header">
+							<h1 id="headerCreaProduct">CREA PRODUCTE</h1>
 						</div>
-						<div style="float:left;width:10%; margin-left:1%;" >
-							<button onclick="controlCompany.createCompany()" >CREAR</button>
-						</div>
-					</div>
-					<div style="width:90%; margin-left: 5%; margin-right: 5%; margin-bottom:20px; overflow: hidden;" >
-	    				<div style="float:left;width:50%" >	
-							<input name="descCompany1" id="descCompany1" ng-model="companyDesc1"  placeholder="Text input" value="" data-clear-btn="true" type="text">
-						</div>
-						<div style="float:left;width:45%; margin-left: 5%;  margin-bottom:20px;" >	
-							<button id="addFotoCompany1" disabled="disabled" onclick="controlCompany.captureImage('companyImg1');">Capture Image</button>
-						</div>
-					</div>
-					<div style="width:90%; margin-left: 5%; margin-right: 5%; margin-bottom:20px; overflow: hidden;" >
-	    				<div style="float:left;width:50%" >	
-							<input name="descCompany2" id="descCompany2" ng-model="companyDesc2"  placeholder="Text input" value="" data-clear-btn="true" type="text">
-						</div>
-						<div style="float:left;width:45%; margin-left: 5%;  margin-bottom:20px;" >	
-							<button id="addFotoCompany2" disabled="disabled" onclick="controlCompany.captureImage('companyImg2');">Capture Image</button>
-						</div>
-					</div>
+			        	<div data-role="content" >
+			    			<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+										<a href="#" class="showMenu" data-icon="bars" data-iconpos="notext" data-shadow="false" data-iconshadow="false">Menu</a>
+							</div>
+			    			<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+								<div style="float:left;width:97%" >	
+									<div data-role="fieldcontain">
+										<label for="categoryProductList" id="labelCategories" class="select">Categories:</label>
+										<select name="categoryProductList" id="categoryProductList" onchange="controlProduct.changeCategory()">
+											<option value="standard"  data-placeholder="true" >...</option>										
+										</select>
+									</div>
+								</div>
 					
-					<div class="examplePDFCompany">
-						<div style="width:90%; margin-left: 5%; margin-right: 5%; margin-bottom:20px; overflow: hidden;" >
-	    					<div style="float:left;width:40%" >	
-								<input type="range" min="1" max="4" value="2" onchange="changeColumnNoSlider1(event)"  />
-							</div>	
-							<div style="float:left;width:40%; margin-left:10%" >	
-								<input type="range" min="1" max="4" value="2" onchange="changeColumnNoSlider2(event)"  />
-							</div>							
-						</div>					
-					</div>
-					<h1>PREVIEW</h1>
-					<br>
-					<div class="examplePDFCompany">
-						<h1>{{companyName}}</h1>
-						<br>
-					
-								<div id="columns-no-example1" class="example" style="-webkit-column-count: 3;">{{companyDesc1}}
-									<img src="" width="200px" id="companyImg1" >
-								</div>    
-								<div id="columns-no-example2" class="example" style="-webkit-column-count: 3;">{{companyDesc2}}
-									<img src="" width="200px" id="companyImg2" >
-								</div>     																
-					</div>
+							</div>															
+							<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+								<div style="float:left;width:97%" >	
+									<div data-role="fieldcontain">
+										<label for="categoryProductSubList" id ="labelSubCategories" class="select">Sub Categories:</label>
+										<select name="categoryProductSubList" id="categoryProductSubList" onchange="controlProduct.changeSubCategory()" >
+											<option value="standard"  data-placeholder="true" >...</option>							
+										</select>
+									</div>
+								</div>						
+							</div>
 					
 					
-		       	</div>			
-				<div data-role="footer">
-						<div style="width:20%; margin-left: 40%; margin-right: 40%; overflow: hidden;" >
-							<h4><p><a class="menuFot" data-role="button" href="#" onclick="controlPage.goToMenu()" >List</a></p></h4>
+							<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+								<div style="float:left;width:97%" >	
+									<div data-role="fieldcontain">
+										<label for="categoryProductSubSubList" id ="labelSubSubCategories" class="select">SubSub Categories:</label>
+										<select name="categoryProductSubSubList" id="categoryProductSubSubList" onchange="controlProduct.changeSubSubCategory()">
+											<option value="standard"  data-placeholder="true" >...</option>							
+										</select>
+									</div>
+								</div>		
+									
+							</div>
+							<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+								<div style="width:45%; float: left;  margin-left: 5%; ">
+									<div data-role="fieldcontain">
+										<label for="select-choice-1" id ="labelidioma" class="select">Idioma:</label>
+										<select name="select-idioma-p1" id="select-idioma-p1">
+											<option value="standard"  data-placeholder="true" >...</option>
+											<option value="CA">CA</option>
+											<option value="ES">ES</option>							
+											<option value="EN">EN</option>
+										</select>
+									</div>
+								</div>
+							</div>
+							<div style="width:90%; margin-left: 5%; margin-right: 5%;  overflow: hidden;" >
+			    				<div style="float:left;width:89%" >						
+									<input name="newProduct" id="newProduct" ng-model="productName"  placeholder="Text input" value="" data-clear-btn="true" type="text">
+								</div>
+								<div style="float:left;width:10%; margin-left:1%;" >
+									<button onclick="controlProduct.create()" >CREAR</button>
+								</div>
+							</div>
+							<div style="width:90%; margin-left: 5%; margin-right: 5%; margin-bottom:20px; overflow: hidden;" >
+			    				<div style="float:left;width:50%" >	
+									<input name="prodCompany1" id="prodCompany1" ng-model="productDesc1"  placeholder="Text input" value="" data-clear-btn="true" type="text">
+								</div>
+								<div style="float:left;width:45%; margin-left: 5%;  margin-bottom:20px;" >	
+									<div style="width:75%;" >
+										<button id="addFotoProduct1" disabled="disabled" onclick="controlProduct.captureImage('productImg1');">Capture Image</button>
+									</div>
+									<div style="width:25%;" >
+										<input name="resize1" id="resize1"  placeholder="width px" value="" data-clear-btn="true" type="text" onblur="resizeIMG('productImg1',this)">
+									</div>
+								</div>
+								
+							</div>
+							<div style="width:90%; margin-left: 5%; margin-right: 5%; margin-bottom:20px; overflow: hidden;" >
+			    				<div style="float:left;width:50%" >	
+									<input name="prodCompany2" id="prodCompany2" ng-model="productDesc2"  placeholder="Text input" value="" data-clear-btn="true" type="text">
+								</div>
+								<div style="float:left;width:45%; margin-left: 5%;  margin-bottom:20px;" >	
+									<div style="width:75%;" >
+										<button id="addFotoProduct2" disabled="disabled" onclick="controlProduct.captureImage('productImg2');">Capture Image</button>
+									</div>
+									<div style="width:25%;" >
+										<input name="resize_p2" id="resize_p2"  placeholder="width px" value="" data-clear-btn="true" type="text" onblur="resizeIMG('productImg1',this)">
+									</div>
+								</div>
+							</div>
+							<div class="examplePDFCompany">
+								<div style="width:90%; margin-left: 5%; margin-right: 5%; margin-bottom:20px; overflow: hidden;" >
+			    					<div style="float:left;width:40%" >	
+										<input type="range" min="1" max="4" value="2" id="range1" onchange="changeColumnNoSlider_p1(event)"  />
+									</div>	
+									<div style="float:left;width:40%; margin-left:10%" >	
+										<input type="range" min="1" max="4" value="2" id="range2" onchange="changeColumnNoSlider_p2(event)"  />
+									</div>							
+								</div>					
+							</div>
+							<div style="width:90%; margin-left: 5%; margin-right: 5%; margin-bottom:20px; overflow: hidden;" >
+								<div style="float:left;width:40%" >	
+									<h1>PREVIEW</h1>
+								</div>
+								<div style="float:left;width:40%" >	
+									<button id="resave"  onclick="controlProduct.resave();">UPDATE</button>
+								</div>
+							</div>
+
+							<div id="previewProduct" class="examplePDFCompany">
+								<h1>{{productName}}</h1>
+								<br>							
+										<div id="columns-no-example-p1" class="example" style="-webkit-column-count: 3;">{{productDesc1}}
+											<img src="" width="200px" id="productImg1" >
+										</div>    
+										<div id="columns-no-example-p2" class="example" style="-webkit-column-count: 3;">{{productDesc2}}
+											<img src="" width="200px" id="productImg2" >
+										</div>     																
+							</div>
+				       	</div>		
+						
+						<div data-role="footer">							
 						</div>
-				</div>
-			</div>
+					</div>
+        
+			
+			
+       
         	
         	<div data-role="page" id="category" >
 	        	<div data-role="header">
 					<h1 id="headerCategory">Category</h1>
 				</div>
 	        	<div data-role="content" >
-	    			
+	    			<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+										<a href="#" class="showMenu" data-icon="bars" data-iconpos="notext" data-shadow="false" data-iconshadow="false">Menu</a>
+					</div>
 	    			<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
 	    				<div style="float:left;width:97%" >	
 				            <div data-role="fieldcontain">
@@ -237,11 +472,17 @@
 						</div>
 				</div>
 			</div>
+			
+			
+			
         	<div data-role="page" id="insert" >
 	        	<div data-role="header">
 					<h1 id="headerInsertUsers">Users</h1>
 				</div>
 	        	<div data-role="content" >
+					<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+						<a href="#" class="showMenu" data-icon="bars" data-iconpos="notext" data-shadow="false" data-iconshadow="false">Menu</a>
+					</div>
 	    			<div style="width:70%; margin-left: 15%; margin-right: 15%; overflow: hidden;" >	
 	    				<div style="float:left;width:33%" >	
 		    				<input name="firstname" id="firstname" placeholder="Text input" value="" data-clear-btn="true" type="text">
@@ -286,39 +527,11 @@
 				<div data-role="footer">
 						<h4><p><a class="menuFotClients" href="#clients">List</a></p></h4>
 				</div>
-			</div>
-	       
-			
-			<div data-role="page" id="menu" >
-		        	<div data-role="header">
-						<h1>Catalog</h1>
-					</div>
-		        	<div data-role="content" >
-						
-							<ul id="menuList" data-role="listview"  data-inset="true" data-filter="true">
-							  
-							</ul>
-						
-					</div>
-					<div data-role="footer">
-						<h4><p><a href="#" data-role="button" onclick="controlUser.logOut();">LogOut</a></p></h4>
-					</div>
-			</div>
-			
-	        <div data-role="page" id="clients" >
-		        	<div data-role="header">
-						<h1>Users</h1>
-					</div>
-		        	<div data-role="content" >
-						<ul id="clientsList" data-role="listview" data-inset="true" data-filter="true">
-					
-						</ul>
-			       		 
-					</div>
-					<div data-role="footer">
-						<h4><p><a href="#captur" data-role="button" id="capturFot">CAPTURA</a>&nbsp;<a href="#" data-role="button" onclick="controlPage.goToMenu()" id="menuFot">Menu</a>&nbsp;<a href="#insert" data-role="button" id="insertFot">Insert User</a> &nbsp;<a href="#" data-role="button" id="logOutFot" onclick="controlUser.logOut();">LogOut</a></p></h4>
-					</div>
-			</div>
+			</div>	
+            
+           
+		
+	        
        
 			
 			
@@ -327,13 +540,18 @@
 					<h1 id="headerInfoUser" >Info User</h1>
 				</div>
 	        	<div data-role="content" >
-	    				
+						 <div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+										<a href="#" class="showMenu" data-icon="bars" data-iconpos="notext" data-shadow="false" data-iconshadow="false">Menu</a>
+						</div>
 		   				 <a href="#" data-role="button" id="userToDelete" onclick="controlUser.deleteUser();">Delete user</a>  
 		       	</div>			
 				<div data-role="footer">
 						<h4><p><a class="menuFotClients" href="#clients" data-role="button">List</a></p></h4>
 				</div>
 			</div>	
+			
+			
+			
 			 <div data-role="page" id="captur" >
 		        	<div data-role="header">
 						<h1>VIDEO</h1>
@@ -355,7 +573,9 @@
 					<h1 id="headerNotificacions"></h1>
 				</div>
 	        	<div data-role="content" >
-	    			
+	    			<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+										<a href="#" class="showMenu" data-icon="bars" data-iconpos="notext" data-shadow="false" data-iconshadow="false">Menu</a>
+					</div>
 	    		
 		           <ul id="notifList">
 					
@@ -371,7 +591,9 @@
 					<h1 id="headerNotificacionsPrive"></h1>
 				</div>
 	        	<div data-role="content" >
-	    			
+	    			<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+										<a href="#" class="showMenu" data-icon="bars" data-iconpos="notext" data-shadow="false" data-iconshadow="false">Menu</a>
+					</div>
 	    		
 		           <ul id="notifPriveList">
 					
@@ -388,6 +610,10 @@
 					<h1 id="headerNotificacionsEnvia"></h1>
 				</div>
 	        	<div data-role="content" >
+				
+					<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+										<a href="#" class="showMenu" data-icon="bars" data-iconpos="notext" data-shadow="false" data-iconshadow="false">Menu</a>
+					</div>
 	    			
 	    		
 		           <ul id="notifSearchUser">
@@ -399,6 +625,48 @@
 						<h4><p><a class="menuFot" href="#" onclick="controlPage.goToMenu()" ></a></p></h4>
 				</div>
 			</div>
+			<div data-role="page" id="companyInfo" >
+	        	<div data-role="header">
+					<h1 id="headerCompInf">COMPANY INFO</h1>
+				</div>
+	        	<div data-role="content" >
+					<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+										<a href="#" class="showMenu" data-icon="bars" data-iconpos="notext" data-shadow="false" data-iconshadow="false">Menu</a>
+					</div>		
+	    		
+		           <div id="htmlCompany">
+					
+				   </div>
+				  
+		       	</div>			
+				<div data-role="footer">
+						<h4><p><a class="menuFot" href="#" onclick="controlPage.goToMenu()" ></a></p></h4>
+				</div>
+			</div>
+			
+			<div data-role="page" id="cataleg" >
+	        	<div data-role="header">
+					<h1 id="headerCataleg">CATALEG</h1>
+				</div>
+	        	<div data-role="content" >
+	    			
+					<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+										<a href="#" class="showMenu" data-icon="bars" data-iconpos="notext" data-shadow="false" data-iconshadow="false">Menu</a>
+					</div>
+					<div style="width:90%; margin-left: 5%; margin-right: 5%; overflow: hidden;" >
+							<a href="#" data-role="button" id="user" onclick="controlProduct.getPrevious();">PREVIOUS</a>
+							<a href="#" data-role="button" id="user" onclick="controlProduct.getNext();">NEXT</a>
+					</div>
+		           <div id="htmlCataleg">
+					
+				   </div>
+				  
+		       	</div>			
+				<div data-role="footer">
+						<h4><p><a class="menuFot" href="#" onclick="controlPage.goToMenu()" ></a></p></h4>
+				</div>
+			</div>
+			
 				
  	 	</body> 
  	 	<script type="text/javascript" charset="utf-8">  

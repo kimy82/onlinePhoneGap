@@ -6,6 +6,7 @@
 														this.categoryArray=new Array();		
 														this.companyArray= new Array();										
 														this.notifArray= new Array();	
+														this.productArray= new Array();
 						      					},
 						      					_clientfilled:false,
 												_categoryfilled: false,						      											      			
@@ -16,6 +17,7 @@
 													 tx.executeSql('CREATE TABLE IF NOT EXISTS CATEGORY (name, type,supername,id)');
 													 tx.executeSql('CREATE TABLE IF NOT EXISTS COMPANY (name,id)');
 													 tx.executeSql('CREATE TABLE IF NOT EXISTS NOTIFICACIONS (id,notif,date,username1,username2,sent,recieved)');
+													 tx.executeSql('CREATE TABLE IF NOT EXISTS PRODUCTS (id,name,html,company)');
 													 //tx.executeSql('INSERT INTO CLIENTS (name) VALUES ("KIMY")');
 													 console.log("table created");													 													 
 												},
@@ -32,19 +34,21 @@
 													 tx.executeSql('DELETE FROM CATEGORY where 1=1');
 													 tx.executeSql('DELETE FROM COMPANY where 1=1');
 													 tx.executeSql('DELETE FROM NOTIFICACIONS where 1=1');
+													 tx.executeSql('DELETE FROM PRODUCTS where 1=1');
 													});
 													console.log("taules borrades en logout");
 												},
-												checkCategoryFilled: function(){
+												checkCategoryFilled: function(id,idsub,idsubsub){
+													$(document).unbind('pagechange');
 													db.transaction(function (tx) {
 													   tx.executeSql('SELECT * FROM CATEGORY', [], function (tx, results) {
 														   var len = results.rows.length;
 														   console.log("Num regiestres de categories::"+len);
 														   if(parseInt(len)>0){
 														   		console.log("TRUE CAT");		
-														   		 var categoryList= document.getElementById("categoryList");
-														   		 var categorySubList= document.getElementById("categorySubList");
-														   		 var categorySubSubList= document.getElementById("categorySubSubList");
+														   		 var categoryList= document.getElementById(id);
+														   		 var categorySubList= document.getElementById(idsub);
+														   		 var categorySubSubList= document.getElementById(idsubsub);
 														   	 
 														   	 	 $(categoryList).empty();
 																 $(categorySubList).empty();
@@ -82,9 +86,9 @@
 																			dataType: 'json',
 																			cache : false,													         
 																			success: function ( jsonResponse ) {
-																					 var categoryList= document.getElementById("categoryList");
-																					 var categorySubList= document.getElementById("categorySubList");
-																					 var categorySubSubList= document.getElementById("categorySubSubList");
+																					 var categoryList= document.getElementById(id);
+																					 var categorySubList= document.getElementById(idsub);
+																					 var categorySubSubList= document.getElementById(idsubsub);
 																					 $(categoryList).empty();
 																					 $(categorySubList).empty();
 																					 $(categorySubSubList).empty();
@@ -335,7 +339,35 @@
 														 }, null);
 													});
 													return false;
-												},											
+												},	
+												checkProductsFilled: function(){
+														db.transaction(function (tx) {
+													    tx.executeSql('SELECT * FROM PRODUCTS', [], function (tx, results) {
+														   var len = results.rows.length;
+														   console.log("Num regiestres de PRODUCTES::"+len);
+														   var companyId = window.localStorage.getItem("user.companyId");
+														   if(parseInt(len)>0){
+														   		console.log("TRUE PRODUCTS");																   																	 																 																
+																																									   	
+														   }else{ 
+														   		console.log("FALSE PRODUCTS"); 
+														   		console.log("filling products table");
+																
+																																
+																db.transaction(controlDB.queryInsertProducts, controlDB.errorCB);																							
+														   }
+														 }, null);
+													});
+													return false;
+												},
+												fillProducts: function(){
+													if(!window.navigator.onLine){
+														console.log("No internet...");
+														navigator.notification.alert(Translation.getText(10));  
+														return;
+													}
+													controlDB.checkProductsFilled();
+												},
 												fillClient: function(){
 													if(!window.navigator.onLine){
 														console.log("No internet...");
@@ -351,7 +383,7 @@
 														navigator.notification.alert(Translation.getText(10));  
 														return;
 													}
-													controlDB._categoryfilled = controlDB.checkCategoryFilled();																																											
+													controlDB._categoryfilled = controlDB.checkCategoryFilled('categoryList','categorySubList','categorySubSubList');																																											
 																											
 												},
 												fillCompanies: function(){
@@ -433,6 +465,23 @@
 													}catch(error){console.log("error creating table notif");}
 													console.log("notif inserted");
 												},
+												queryInsertProducts: function(tx){
+													console.log("Inserting products "+controlDB.productArray.length);
+													try{
+														for(i=0;i<controlDB.productArray.length;i++){	
+															if(typeof controlDB.productArray[i]==='undefined' || typeof controlDB.productArray[i].getName()==='undefined' ){
+																console.log("product undefined");																
+															}else{
+															
+																var query = 'INSERT INTO PRODUCTS (id,name,html,company) VALUES ("'+controlDB.productArray[i].getId()+'","'+controlDB.productArray[i].getName()+'","'+controlDB.productArray[i].getHtml()+'","'+controlDB.productArray[i].getCompany()+'")';
+																
+																									
+																tx.executeSql(query);
+															}
+														}
+													}catch(error){console.log("error creating table products");}
+													console.log("products inserted");
+												},
 												queryDeleteCategory: function(tx) {
 													console.log("Delete category ");
 													try{
@@ -493,5 +542,27 @@
 														});
 														
 													console.log("private notes printed");
+												},
+												getProduct: function(id){
+													console.log("get product "+id);	
+													
+														db.transaction(function (tx) {
+															var companyId = window.localStorage.getItem("user.companyId");													
+															var url='SELECT * FROM PRODUCTS WHERE id="'+id+'" and company="'+companyId+'"';
+															tx.executeSql(url, [], function (tx, results) {	
+															   var len = results.rows.length;
+															   alert(len);
+															   if(parseInt(len)>0){
+																for (var i=0; i<len; i++){	
+																	console.log("product selected");
+																	alert(results.rows.item(i).name);
+																	return new Product(results.rows.item(i).name,results.rows.item(i).html,results.rows.item(i).id,results.rows.item(i).company);
+																}
+															   }
+															});
+														});
+														
+													return null;
+												
 												},
 											}

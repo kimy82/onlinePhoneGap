@@ -19,7 +19,7 @@
 														$(categorySubSubList).empty();
 														$(categorySubList).append('<option value="standard"  data-placeholder="true" >...</option>');
 														$(categorySubSubList).append('<option value="standard"  data-placeholder="true" >...</option>');
-														controlCategory._selectSubCategory(category);																																												
+														controlCategory._selectSubCategory(category,'categorySubList');																																												
 																												      		
 											      	},
 											      	changeSubCategory: function(){											      
@@ -38,12 +38,12 @@
 														controlCategory._setSubSubCategories(subCategory);
 											      		
 											      	},
-											      	_selectSubCategory: function(category){
+											      	_selectSubCategory: function(category,id){
 											      		db.transaction(function (tx) {
 											      		   var sql='SELECT * FROM CATEGORY where type="N1" and supername="'+category+'"';
 											      		   console.log("SQL sub cat::"+sql);
 														   tx.executeSql(sql, [], function (tx, results) {
-														   	   var categorySubList= document.getElementById("categorySubList");
+														   	   var categorySubList= document.getElementById(id);
 														   	   console.log("sub categories"+results.rows);
 														   	   console.log("sub categories lenght"+results.rows);
 															   controlCategory._resultatsSubCat=results;
@@ -63,7 +63,7 @@
 															 },controlCategory.errorCB);
 														});																							      	
 											      	},
-											      	_selectSubSubCategory: function(subcategory){
+											      	_selectSubSubCategory: function(subcategory,id){
 											      		db.transaction(function (tx) {
 											      			var sql='SELECT * FROM CATEGORY where type="N2" and supername="'+subcategory+'"';
 											      		   console.log("SQL subsub cat::"+sql);
@@ -77,7 +77,7 @@
 																
 																var len = controlCategory._resultatsSubSubCat.rows.length;
 																
-																var categorySubSubList= document.getElementById("categorySubSubList");
+																var categorySubSubList= document.getElementById(id);
 																 for (var i=0; i<len; i++){																															
 																	console.log("resultats subsub cat iteracio:: "+controlCategory._resultatsSubSubCat.rows);
 																	$(categorySubSubList).append('<option value="'+controlCategory._resultatsSubSubCat.rows.item(i).id+'" >'+controlCategory._resultatsSubSubCat.rows.item(i).name+'</option>');																															
@@ -88,7 +88,7 @@
 											      	_setSubSubCategories: function(name){
 											      		//get subsubcategories of subcategory
 											      		console.log("agafem subsubcategiries from"+name);														
-														controlCategory._selectSubSubCategory(name);																																																							
+														controlCategory._selectSubSubCategory(name,'categorySubSubList');																																																							
 														console.log("END: agafem subsubcategiries");
 											      	},
 											      	errorCB: function(tx, err) {
